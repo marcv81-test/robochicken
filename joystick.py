@@ -1,5 +1,6 @@
-import os, struct, array
+import struct, array
 from fcntl import ioctl
+from select import select
 
 class Joystick:
 
@@ -79,7 +80,7 @@ class Joystick:
         self.button_states = {}
 
         # Open the joystick device
-        self._jsdev = open(device, 'rb')
+        self._jsdev = open(device, 'rb', 0)
 
         # Get number of axes
         buf = array.array('B', [0])
@@ -107,21 +108,23 @@ class Joystick:
             self.button_map.append(btn_name)
             self.button_states[btn_name] = 0
 
-    def read_events(self):
+    def update(self):
 
-        evbuf = self._jsdev.read(8)
-        if evbuf:
-            time, value, type, number = struct.unpack('IhBB', evbuf)
+        # Read all the available events
+        while self._jsdev in select([self._jsdev], [], [], 0)[0]:
+            evbuf = self._jsdev.read(8)
+            if evbuf:
+                time, value, type, number = struct.unpack('IhBB', evbuf)
 
-            # Button event
-            if type & 0x01:
-                button = self.button_map[number]
-                if button:
-                    self.button_states[button] = value
+                # Button event
+                if type & 0x01:
+                    button = self.button_map[number]
+                    if button:
+                        self.button_states[button] = value
 
-            # Axis event
-            if type & 0x02:
-                axis = self.axis_map[number]
-                if axis:
-                    fvalue = value / 32767.0
-                    self.axis_states[axis] = fvalue
+                # Axis event
+                if type & 0x02:
+                    axis = self.axis_map[number]
+                    if axis:
+                        fvalue = value / 32767.0
+                        self.axis_states[axis] = fvalue
