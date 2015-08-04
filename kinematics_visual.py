@@ -26,8 +26,8 @@ class VisualLimb(Limb):
         points[0] = rigid_motion.translation_only()
         for i in range(self._sections_count):
             rigid_motion = rigid_motion.compose(RigidMotion(
-                rotation(self._axes[i], self._angles[i]),
-                [self._lengths[i], 0, 0]))
+                    rotation(self._axes[i], self._angles[i]),
+                    [self._lengths[i], 0, 0]))
             points[i + 1] = rigid_motion.translation_only()
             self._rods[i].pos = points[i]
             self._rods[i].axis = points[i + 1] - points[i]

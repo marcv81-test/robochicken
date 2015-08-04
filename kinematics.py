@@ -19,9 +19,9 @@ def rotation(axis, theta):
     bd = b * d
     cd = c * d
     return [
-        [aa + bb - cc - dd, 2 * (bc + ad), 2 * (bd - ac)],
-        [2 * (bc - ad), aa + cc - bb - dd, 2 * (cd + ab)],
-        [2 * (bd + ac), 2 * (cd - ab), aa + dd - bb - cc]]
+            [aa + bb - cc - dd, 2 * (bc + ad), 2 * (bd - ac)],
+            [2 * (bc - ad), aa + cc - bb - dd, 2 * (cd + ab)],
+            [2 * (bd + ac), 2 * (cd - ab), aa + dd - bb - cc]]
 
 class RigidMotion:
     """Rotation followed by a translation"""
@@ -64,7 +64,10 @@ class JacobianSolver:
         return np.transpose(matrix)
 
     def converge(self, input_vector, target_output_vector, output_vector = None):
-        """Update input vector to converge toward target output vector (unsafe near singularities)"""
+        """
+        Update input vector to converge toward target output vector.
+        Unsafe near singularities.
+        """
         if (output_vector == None):
             output_vector = self._function(input_vector)
         output_error_vector = target_output_vector - output_vector
@@ -113,8 +116,8 @@ class Limb:
         rigid_motion = self._initial_rigid_motion
         for i in range(self._sections_count):
             rigid_motion = rigid_motion.compose(RigidMotion(
-                rotation(self._axes[i], angles[i]),
-                [self._lengths[i], 0, 0]))
+                    rotation(self._axes[i], angles[i]),
+                    [self._lengths[i], 0, 0]))
         return rigid_motion.translation_only()
 
     def forward_kinematics(self, angles):
@@ -131,7 +134,8 @@ class Limb:
         """Update the internal state according to inverse kinematics"""
         solver = JacobianSolver(lambda x: self.end_point(x))
         self.forward_kinematics(solver.converge(
-            self._angles, target_end_point, output_vector = self._end_point))
+                self._angles, target_end_point,
+                output_vector = self._end_point))
 
 class Multipod:
     """
