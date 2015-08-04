@@ -73,27 +73,39 @@ class JacobianSolver:
         return input_vector + input_fix_vector
 
 class Limb:
-    """Robotic arm/leg model, hexapod leg by default"""
+    """
+    Robotic arm/leg model.
+    3 sections multipod leg by default.
+    """
 
-    def __init__(self,
+    def __init__(self, **kwargs):
+        self._initialize_first(**kwargs)
+        self._initialize_second()
+
+    def _initialize_first(self,
             initial_rigid_motion = RigidMotion(),
             lengths = [0.25, 1, 2],
             axes = [[0, 0, 1], [0, 1, 0], [0, 1, 0]],
             angles_limits = [
-                [-tau / 8.0, tau / 8.0],
-                [-3.0 * tau / 8.0, 3.0 * tau / 8.0],
-                [-3.0 * tau / 8.0, -tau / 8.0]]):
+                [-tau / 8, tau / 8],
+                [-tau / 8, 3 * tau / 8],
+                [-3 * tau / 8, -tau / 8]]):
+        """First stage constructor"""
         self._initial_rigid_motion = initial_rigid_motion
         self._lengths = lengths
         self._axes = axes
         self._angles_limits = angles_limits
         self._sections_count = len(lengths)
+
+    def _initialize_second(self):
+        """Second stage constructor"""
         default_angles = [0] * self._sections_count
         for i in range(self._sections_count):
             min_angle = self._angles_limits[i][0]
             max_angle = self._angles_limits[i][1]
             default_angles[i] = (min_angle + max_angle) / 2.0
         self.forward_kinematics(default_angles)
+        self._rest_end_point = self._end_point
 
     def end_point(self, angles):
         """Forward kinematics equation"""
@@ -119,3 +131,37 @@ class Limb:
         solver = JacobianSolver(lambda x: self.end_point(x))
         self.forward_kinematics(solver.converge(
             self._angles, target_end_point, output_vector = self._end_point))
+
+class Multipod:
+    """
+    Multipod model with identical legs arranged evenly around a circle.
+    Hexapod by default.
+    """
+
+    def __init__(self, **kwargs):
+        kwargs["leg_class"] = Limb
+        self._initialize(**kwargs)
+
+    def _initialize(self,
+            leg_class,
+            leg_kwargs = {},
+            legs_count = 6,
+            initial_translation = [1, 0, 0]):
+        """Constructor"""
+        self._legs_count = legs_count
+        self._legs = [None] * self._legs_count
+        for i in range(self._legs_count):
+            angle = tau / (2 * self._legs_count) + i * tau / self._legs_count
+            initial_rotation = rotation([0, 0, 1], angle)
+            initial_rigid_motion = RigidMotion(initial_rotation, initial_translation)
+            leg_kwargs["initial_rigid_motion"] = initial_rigid_motion
+            self._legs[i] = leg_class(**leg_kwargs)
+
+    def direct_control(self, x, y, z):
+        """Control all the legs directly (for testing)"""
+        for i in range(self._legs_count):
+            target_position = list(self._legs[i]._rest_end_point)
+            target_position[0] = target_position[0] + x
+            target_position[1] = target_position[1] + y
+            target_position[2] = target_position[2] + z
+            self._legs[i].inverse_kinematics(target_position)
