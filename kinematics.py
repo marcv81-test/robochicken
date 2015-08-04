@@ -69,7 +69,8 @@ class JacobianSolver:
             output_vector = self._function(input_vector)
         output_error_vector = target_output_vector - output_vector
         jacobian_matrix = self.jacobian_matrix(input_vector, output_vector)
-        input_fix_vector = np.linalg.solve(jacobian_matrix, output_error_vector)
+        jacobian_inverse_matrix = np.linalg.pinv(jacobian_matrix)
+        input_fix_vector = np.dot(jacobian_inverse_matrix, output_error_vector)
         return input_vector + input_fix_vector
 
 class Limb:
