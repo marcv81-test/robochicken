@@ -89,8 +89,8 @@ class Limb:
             axes = [[0, 0, 1], [0, 1, 0], [0, 1, 0]],
             angles_limits = [
                 [-tau / 8, tau / 8],
-                [-tau / 8, 3 * tau / 8],
-                [-3 * tau / 8, -tau / 8]]):
+                [-3 * tau / 8, tau / 8],
+                [tau / 8, 3 * tau / 8]]):
         """First stage constructor"""
         self._initial_rigid_motion = initial_rigid_motion
         self._lengths = lengths
