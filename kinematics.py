@@ -162,11 +162,10 @@ class Multipod:
             leg_kwargs["initial_rigid_motion"] = initial_rigid_motion
             self._legs[i] = leg_class(**leg_kwargs)
 
-    def direct_control(self, x, y, z):
+    def direct_control(self, x, y, z, a):
         """Control all the legs directly (for testing)"""
+        target_motion = RigidMotion(rotation = rotation([0, 0, 1], a), translation = [x, y, z])
         for i in range(self._legs_count):
-            target_position = list(self._legs[i]._rest_end_point)
-            target_position[0] = target_position[0] + x
-            target_position[1] = target_position[1] + y
-            target_position[2] = target_position[2] + z
+            rest_motion = RigidMotion(translation = self._legs[i]._rest_end_point)
+            target_position = target_motion.compose(rest_motion).translation_only()
             self._legs[i].inverse_kinematics(target_position)
