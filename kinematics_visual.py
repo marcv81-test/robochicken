@@ -4,20 +4,7 @@ from kinematics import *
 class VisualLimb(Limb):
     """Visual robotic arm/leg model"""
 
-    def __init__(self,**kwargs):
-        self._initialize_first(**kwargs)
-        self._initialize_rods()
-        self._initialize_second()
-
-    def forward_kinematics(self, angles):
-        Limb.forward_kinematics(self, angles)
-        self.draw()
-
-    def inverse_kinematics(self, target_end_point):
-        Limb.inverse_kinematics(self, target_end_point)
-        self.draw_target()
-
-    def _initialize_rods(self):
+    def initialize_draw(self):
         """Initialize the limb"""
         self._rods = [None] * self._sections_count
         for i in range(self._sections_count):
@@ -36,13 +23,22 @@ class VisualLimb(Limb):
             points[i + 1] = rigid_motion.translation_only()
             self._rods[i].pos = points[i]
             self._rods[i].axis = points[i + 1] - points[i]
-
-    def draw_target(self):
         self._ball.pos = self._target_end_point
 
 class VisualMultipod(Multipod):
     """Visual multipod model"""
 
     def __init__(self, **kwargs):
+        """Constructor"""
         kwargs["leg_class"] = VisualLimb
-        self._initialize(**kwargs)
+        Multipod.__init__(self, **kwargs)
+
+    def initialize_draw(self):
+        """Initialize the multipod"""
+        for i in range(self._legs_count):
+            self._legs[i].initialize_draw()
+
+    def draw(self):
+        """Draw the multipod"""
+        for i in range(self._legs_count):
+            self._legs[i].draw()

@@ -82,25 +82,19 @@ class Limb:
     3 sections multipod leg by default.
     """
 
-    def __init__(self, **kwargs):
-        self._initialize_first(**kwargs)
-        self._initialize_second()
-
-    def _initialize_first(self,
+    def __init__(self,
             initial_rigid_motion = RigidMotion(),
             lengths = [0.25, 1, 2],
             axes = [[0, 0, 1], [0, 1, 0], [0, 1, 0]],
             default_angles = [0, -tau / 8, tau / 4]):
-        """First stage constructor"""
+        """Constructor"""
         self._initial_rigid_motion = initial_rigid_motion
         self._lengths = lengths
         self._axes = axes
         self._default_angles = default_angles
+        self._angles = default_angles
         self._sections_count = len(lengths)
-
-    def _initialize_second(self):
-        """Second stage constructor"""
-        self.forward_kinematics(self._default_angles)
+        self._end_point = self.end_point(default_angles)
         self._rest_end_point = self._end_point
         self._target_end_point = self._end_point
 
@@ -113,18 +107,13 @@ class Limb:
                     [self._lengths[i], 0, 0]))
         return rigid_motion.translation_only()
 
-    def forward_kinematics(self, angles):
-        """Update the internal state according to forward kinematics"""
-        self._angles = angles
-        self._end_point = self.end_point(angles)
-
     def inverse_kinematics(self, target_end_point):
-        """Update the internal state according to inverse kinematics"""
+        """Update the internal state according to an IK approximation"""
         solver = JacobianSolver(lambda x: self.end_point(x))
         self._target_end_point = target_end_point
-        self.forward_kinematics(solver.converge(
+        self._angles = solver.converge(
                 self._default_angles, self._target_end_point,
-                output_vector = self._rest_end_point))
+                output_vector = self._rest_end_point)
 
 class Multipod:
     """
@@ -132,12 +121,8 @@ class Multipod:
     Hexapod by default.
     """
 
-    def __init__(self, **kwargs):
-        kwargs["leg_class"] = Limb
-        self._initialize(**kwargs)
-
-    def _initialize(self,
-            leg_class,
+    def __init__(self,
+            leg_class = 'Limb',
             leg_kwargs = {},
             legs_count = 6,
             initial_translation = [1, 0, 0]):

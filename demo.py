@@ -28,6 +28,8 @@ if (args.model == "spider"):
 else:
     multipod = VisualMultipod()
 
+multipod.initialize_draw()
+
 t = 0.0
 dt = 0.04
 while True:
@@ -39,3 +41,4 @@ while True:
     z = 1.8 * (joystick.axis_states["y"])
     a = tau / 8 * (joystick.axis_states["x"])
     multipod.direct_control(x, y, z, a)
+    multipod.draw()
