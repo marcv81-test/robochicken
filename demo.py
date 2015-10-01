@@ -38,8 +38,8 @@ while True:
     rate(25)
     t += dt
     joystick.update()
-    x = -0.4 * joystick.axis_states["ry"]
-    y = 0.4 * joystick.axis_states["rx"]
-    z = 0.2 * (joystick.axis_states["y"] + 1.0)
-    a = tau / 32.0 * (joystick.axis_states["x"])
+    x = -1.5 * joystick.axis_states["ry"]
+    y = 1.5 * joystick.axis_states["rx"]
+    z = 1.8 * (joystick.axis_states["y"])
+    a = tau / 8 * (joystick.axis_states["x"])
     multipod.direct_control(x, y, z, a)
