@@ -102,6 +102,7 @@ class Limb:
         """Second stage constructor"""
         self.forward_kinematics(self._default_angles)
         self._rest_end_point = self._end_point
+        self._target_end_point = self._end_point
 
     def end_point(self, angles):
         """Forward kinematics equation"""
@@ -120,6 +121,7 @@ class Limb:
     def inverse_kinematics(self, target_end_point):
         """Update the internal state according to inverse kinematics"""
         solver = JacobianSolver(lambda x: self.end_point(x))
+        self._target_end_point = target_end_point
         self.forward_kinematics(solver.converge(
                 self._angles, target_end_point,
                 output_vector = self._end_point))
@@ -154,5 +156,5 @@ class Multipod:
         target_motion = RigidMotion(rotation = rotation([0, 0, 1], a), translation = [x, y, z])
         for i in range(self._legs_count):
             rest_motion = RigidMotion(translation = self._legs[i]._rest_end_point)
-            target_position = target_motion.compose(rest_motion).translation_only()
-            self._legs[i].inverse_kinematics(target_position)
+            target_end_point = target_motion.compose(rest_motion).translation_only()
+            self._legs[i].inverse_kinematics(target_end_point)
