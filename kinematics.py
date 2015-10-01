@@ -123,8 +123,8 @@ class Limb:
         solver = JacobianSolver(lambda x: self.end_point(x))
         self._target_end_point = target_end_point
         self.forward_kinematics(solver.converge(
-                self._angles, target_end_point,
-                output_vector = self._end_point))
+                self._default_angles, self._target_end_point,
+                output_vector = self._rest_end_point))
 
 class Multipod:
     """
