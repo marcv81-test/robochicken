@@ -90,25 +90,17 @@ class Limb:
             initial_rigid_motion = RigidMotion(),
             lengths = [0.25, 1, 2],
             axes = [[0, 0, 1], [0, 1, 0], [0, 1, 0]],
-            angles_limits = [
-                [-tau / 8, tau / 8],
-                [-3 * tau / 8, tau / 8],
-                [tau / 8, 3 * tau / 8]]):
+            default_angles = [0, -tau / 8, tau / 4]):
         """First stage constructor"""
         self._initial_rigid_motion = initial_rigid_motion
         self._lengths = lengths
         self._axes = axes
-        self._angles_limits = angles_limits
+        self._default_angles = default_angles
         self._sections_count = len(lengths)
 
     def _initialize_second(self):
         """Second stage constructor"""
-        default_angles = [0] * self._sections_count
-        for i in range(self._sections_count):
-            min_angle = self._angles_limits[i][0]
-            max_angle = self._angles_limits[i][1]
-            default_angles[i] = (min_angle + max_angle) / 2.0
-        self.forward_kinematics(default_angles)
+        self.forward_kinematics(self._default_angles)
         self._rest_end_point = self._end_point
 
     def end_point(self, angles):
@@ -122,11 +114,6 @@ class Limb:
 
     def forward_kinematics(self, angles):
         """Update the internal state according to forward kinematics"""
-        for i in range(self._sections_count):
-            min_angle = self._angles_limits[i][0]
-            max_angle = self._angles_limits[i][1]
-            if (angles[i] < min_angle or angles[i] > max_angle):
-                return
         self._angles = angles
         self._end_point = self.end_point(angles)
 

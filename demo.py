@@ -23,11 +23,7 @@ if (args.model == "spider"):
             leg_kwargs = {
                 "lengths": [0.25, 1, 2, 0.5],
                 "axes": [[0, 0, 1], [0, 1, 0], [0, 1, 0], [0, 1, 0]],
-                "angles_limits": [
-                    [-tau / 8, tau / 8],
-                    [-3 * tau / 8, tau / 8],
-                    [0 * tau / 8, 4 * tau / 8],
-                    [-tau / 8, tau / 16]]},
+                "default_angles": [0, -tau / 8, tau / 4, -tau / 32]},
             legs_count = 8)
 else:
     multipod = VisualMultipod()
