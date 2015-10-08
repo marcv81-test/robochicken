@@ -66,6 +66,10 @@ class HexapodLeg:
                 part = RevoluteJoint([0, 1, 0]),
                 parent = 'femur')
         self._tree.add_node(
+                key = 'decoration',
+                part = RigidLink(0.1),
+                parent = 'femur')
+        self._tree.add_node(
                 key = 'tibia',
                 part = RigidLink(2),
                 parent = 'femur_tibia_joint')
