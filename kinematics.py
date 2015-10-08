@@ -7,17 +7,18 @@ tau = 6.28318530718
 
 class Displacement:
     """
-    Combination of a rotation and a translation
+    Combination of a translation and a rotation
     representing a rigid body displacement in space.
 
-    This implementation stores the rotation as a 3x3 matrix
-    and the translation as a vector applied *after* the rotation.
+    This implementation stores the translation as a vector
+    and the rotation as a 3x3 matrix. The translation is
+    applied *before* the rotation.
     """
 
     def __init__(self):
         """Identity constructor"""
-        self._rotation = np.identity(3)
         self._translation = np.zeros(3)
+        self._rotation = np.identity(3)
 
     @staticmethod
     def create_rotation(axis, angle):
@@ -52,15 +53,14 @@ class Displacement:
     def compose(self, other):
         """Equivalent displacement to self then other"""
         displacement = Displacement()
-        displacement._rotation = np.dot(other._rotation, self._rotation)
-        displacement._translation = other._translation + \
-                np.dot(other._rotation, self._translation)
+        displacement._translation = self._translation + \
+                np.dot(self._rotation, other._translation)
+        displacement._rotation = np.dot(self._rotation, other._rotation)
         return displacement
 
     def translation_vector(self):
-        """Vector representing only the translation of the displacement"""
-        inverse_rotation = np.linalg.inv(self._rotation)
-        return np.dot(inverse_rotation, self._translation)
+        """Translation vector of the displacement"""
+        return self._translation
 
 class Tree:
     """

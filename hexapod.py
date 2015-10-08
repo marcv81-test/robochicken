@@ -9,7 +9,7 @@ class HexapodLeg:
     def __init__(self, initial_displacement = Displacement()):
         """Constructor"""
         self._initialize_tree(initial_displacement)
-        self._joints_angles = [0, -tau / 8, tau / 4]
+        self._joints_angles = [0, tau / 8, -tau / 4]
         self._endpoint = self.endpoint(self._joints_angles)
         self._default_endpoint = self._endpoint
         self._target_endpoint = self._endpoint

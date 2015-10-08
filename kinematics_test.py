@@ -7,7 +7,7 @@ class TestDisplacement:
 
     def test_trivial_translation_vector(self):
 
-        a = Displacement.create_rotation([0, 0, 1], tau / 2)
+        a = Displacement.create_rotation([0, 0, 1], tau / 4)
         b = Displacement.create_translation([1, 0, 0])
 
         npt.assert_almost_equal([0, 0, 0], a.translation_vector())
@@ -16,10 +16,17 @@ class TestDisplacement:
 
     def test_translation_vector(self):
 
-        a = Displacement.create_rotation([0, 0, 1], tau / 2)
+        a = Displacement.create_rotation([0, 0, 1], tau / 4)
         b = Displacement.create_translation([1, 0, 0])
+        c = Displacement.create_rotation([0, 1, 0], tau / 4)
 
-        npt.assert_almost_equal([-1, 0, 0], a.compose(b).translation_vector())
+        # Positive rotation around Z in a right-handed coordinates system
+        d = a.compose(b)
+        npt.assert_almost_equal([0, 1, 0], d.translation_vector())
+
+        # Combination of positive rotations in a right-handed coordinates system
+        f = a.compose(b).compose(c).compose(b)
+        npt.assert_almost_equal([0, 1, -1], f.translation_vector())
 
 if __name__ == "__main__":
     npt.run_module_suite()
