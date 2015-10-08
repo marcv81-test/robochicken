@@ -1,5 +1,7 @@
 import math
+import collections
 import numpy as np
+import visual as v
 
 tau = 6.28318530718
 
@@ -19,7 +21,7 @@ class Displacement:
 
     @staticmethod
     def create_rotation(axis, angle):
-        """Factory from rotation axis and angle"""
+        """Create rotation from axis and angle"""
         axis = axis / np.linalg.norm(axis)
         a = math.cos(angle / 2.0)
         b, c, d = -axis * math.sin(angle / 2.0)
@@ -42,7 +44,7 @@ class Displacement:
 
     @staticmethod
     def create_translation(vector):
-        """Factory from translation vector"""
+        """Create translation from vector"""
         displacement = Displacement()
         displacement._translation = vector
         return displacement
@@ -59,3 +61,108 @@ class Displacement:
         """Vector representing only the translation of the displacement"""
         inverse_rotation = np.linalg.inv(self._rotation)
         return np.dot(inverse_rotation, self._translation)
+
+class Tree:
+    """
+    Kinematic Tree. Can be used as a kinematic chain.
+
+    Each node has a key, a part, a parent, and a list of children.
+    The part, parent, and list of children are stored by key in
+    dictionaries. This allows arbitrary node access by key.
+    """
+
+    def __init__(self, root_displacement):
+        """Constructor"""
+        self._parts = { 'root': _Root(root_displacement) }
+        self._parents = dict()
+        self._children = { 'root': list() }
+
+    def add_node(self, key, part, parent = 'root'):
+        """Add a node to the tree"""
+        if key in self._parts:
+            raise ValueError('Key "' + key + '" aready exists')
+        self._parts[key] = part
+        self._parents[key] = parent
+        self._children[key] = list()
+        self._children[parent].append(key)
+
+    def prepare_parameters(self):
+        """Prepare empty parameters for evaluate"""
+        parameters = dict()
+        for key in self._parts:
+            parameters[key] = dict()
+        return parameters
+
+    def evaluate(self, parameters):
+        """
+        Walk the tree (non-recursively) and evaluate the displacement
+        at each node using forward kinematics.
+        """
+        displacements = dict()
+        displacement = Displacement()
+        todo = collections.deque()
+        todo.append(('root', displacement))
+        while todo:
+            item = todo.popleft()
+            (key, displacement) = item
+            part_displacement = self._parts[key].displacement(**parameters[key])
+            displacement = displacement.compose(part_displacement)
+            displacements[key] = displacement
+            for child_key in self._children[key]:
+                todo.append((child_key, displacement))
+        return displacements
+
+    def initialize_draw(self):
+        """Initialize the visual parts"""
+        for key in self._parts:
+            if hasattr(self._parts[key], 'initialize_draw'):
+                self._parts[key].initialize_draw()
+
+    def draw(self, parameters):
+        """Draw the visual parts"""
+        displacements = self.evaluate(parameters)
+        for key in self._parts:
+            if hasattr(self._parts[key], 'draw'):
+                displacement_before = displacements[self._parents[key]]
+                displacement_after = displacements[key]
+                self._parts[key].draw(displacement_before, displacement_after)
+
+class RigidLink:
+    """Rigid link part"""
+
+    def __init__(self, length):
+        self._displacement = Displacement.create_translation([length, 0, 0])
+
+    def displacement(self):
+        return self._displacement
+
+    def initialize_draw(self):
+        self._rod = v.cylinder(radius = 0.05)
+
+    def draw(self, displacement_before, displacement_after):
+        point_before = displacement_before.translation_vector()
+        point_after = displacement_after.translation_vector()
+        self._rod.pos = point_before
+        self._rod.axis = point_after - point_before
+
+class RevoluteJoint:
+    """Revolute joint part"""
+
+    def __init__(self, axis):
+        self._axis = axis
+
+    def displacement(self, angle):
+        return Displacement.create_rotation(self._axis, angle)
+
+class _Root:
+    """
+    Part used as the root node of any tree.
+
+    Stores the intial displacement.
+    """
+
+    def __init__(self, displacement):
+        self._displacement = displacement
+
+    def displacement(self):
+        return self._displacement
