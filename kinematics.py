@@ -21,6 +21,13 @@ class Displacement:
         self._rotation = np.identity(3)
 
     @staticmethod
+    def create_translation(vector):
+        """Create translation from vector"""
+        displacement = Displacement()
+        displacement._translation = vector
+        return displacement
+
+    @staticmethod
     def create_rotation(axis, angle):
         """Create rotation from axis and angle"""
         axis = axis / np.linalg.norm(axis)
@@ -41,13 +48,6 @@ class Displacement:
                 [aa + bb - cc - dd, 2 * (bc + ad), 2 * (bd - ac)],
                 [2 * (bc - ad), aa + cc - bb - dd, 2 * (cd + ab)],
                 [2 * (bd + ac), 2 * (cd - ab), aa + dd - bb - cc]]
-        return displacement
-
-    @staticmethod
-    def create_translation(vector):
-        """Create translation from vector"""
-        displacement = Displacement()
-        displacement._translation = vector
         return displacement
 
     def compose(self, other):
@@ -160,7 +160,8 @@ class _Root:
     """
     Part used as the root node of any tree.
 
-    Stores the intial displacement.
+    Stores the intial displacement. Shall *not* be used
+    as a regular part anywhere else in a tree.
     """
 
     def __init__(self, displacement):
