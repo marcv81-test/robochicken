@@ -25,14 +25,24 @@ class HexapodLeg:
         return displacements['tibia'].translation_vector()
 
     def inverse_kinematics(self, target_endpoint):
-        """Update the joints angles according to an IK approximation"""
+        """
+        Update the joints angles according to an IK approximation.
+
+        Calculate proposed joints angles using the Jacobian inverse
+        technique. Only accept them if they reduce the error.
+        """
         self._target_endpoint = target_endpoint
-        self._joints_angles = self._solver.converge(
+        error = self._target_endpoint - self._endpoint
+        proposed_joints_angles = self._solver.converge(
                 input_vector = self._joints_angles,
                 target_output_vector = self._target_endpoint,
                 output_vector = self._endpoint)
-        self._limit_joints_angles()
-        self._endpoint = self.endpoint(self._joints_angles)
+        proposed_joints_angles = self._limit_joints_angles(proposed_joints_angles)
+        proposed_endpoint = self.endpoint(proposed_joints_angles)
+        proposed_error = self._target_endpoint - proposed_endpoint
+        if np.linalg.norm(proposed_error) < np.linalg.norm(error):
+            self._joints_angles = proposed_joints_angles
+            self._endpoint = proposed_endpoint
 
     def initialize_draw(self):
         """Initialize the visual elements"""
@@ -84,13 +94,14 @@ class HexapodLeg:
         parameters['femur_tibia_joint']['angle'] = joints_angles[2]
         return parameters
 
-    def _limit_joints_angles(self):
+    def _limit_joints_angles(self, joints_angles):
         """Apply mechanical constraints on joints angles"""
         for i in range(3):
-            if self._joints_angles[i] > self._joints_amplitudes[i]:
-                self._joints_angles[i] = self._joints_amplitudes[i]
-            if self._joints_angles[i] < -self._joints_amplitudes[i]:
-                self._joints_angles[i] = -self._joints_amplitudes[i]
+            if joints_angles[i] > self._joints_amplitudes[i]:
+                joints_angles[i] = self._joints_amplitudes[i]
+            if joints_angles[i] < -self._joints_amplitudes[i]:
+                joints_angles[i] = -self._joints_amplitudes[i]
+        return joints_angles
 
 class Hexapod:
     """Hexapod with direct legs control"""
