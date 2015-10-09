@@ -99,17 +99,17 @@ class Tree:
         at each node using forward kinematics.
         """
         displacements = dict()
-        displacement = Displacement()
         todo = collections.deque()
-        todo.append(('root', displacement))
+        todo.append('root')
         while todo:
-            item = todo.popleft()
-            (key, displacement) = item
-            part_displacement = self._parts[key].displacement(**parameters[key])
-            displacement = displacement.compose(part_displacement)
+            key = todo.popleft()
+            displacement = self._parts[key].displacement(**parameters[key])
+            if key != 'root':
+                previous_displacement = displacements[self._parents[key]]
+                displacement = previous_displacement.compose(displacement)
             displacements[key] = displacement
             for child_key in self._children[key]:
-                todo.append((child_key, displacement))
+                todo.append(child_key)
         return displacements
 
     def initialize_draw(self):
