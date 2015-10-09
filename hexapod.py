@@ -9,7 +9,8 @@ class HexapodLeg:
     def __init__(self, initial_displacement = Displacement()):
         """Constructor"""
         self._initialize_tree(initial_displacement)
-        self._joints_angles = [0, tau / 8, -tau / 4]
+        self._joints_angles = [0] * 3
+        self._joints_amplitudes = [tau / 8, tau / 4, 3 * tau / 16]
         self._endpoint = self.endpoint(self._joints_angles)
         self._default_endpoint = self._endpoint
         self._target_endpoint = self._endpoint
@@ -30,6 +31,7 @@ class HexapodLeg:
                 input_vector = self._joints_angles,
                 target_output_vector = self._target_endpoint,
                 output_vector = self._endpoint)
+        self._limit_joints_angles()
         self._endpoint = self.endpoint(self._joints_angles)
 
     def initialize_draw(self):
@@ -48,14 +50,14 @@ class HexapodLeg:
         self._tree = Tree(initial_displacement)
         self._tree.add_node(
                 key = 'root_coxa_joint',
-                part = RevoluteJoint([0, 0, 1]))
+                part = RevoluteJoint([0, 0, 1], 0))
         self._tree.add_node(
                 key = 'coxa',
                 part = RigidLink(0.25),
                 parent = 'root_coxa_joint')
         self._tree.add_node(
                 key = 'coxa_femur_joint',
-                part = RevoluteJoint([0, 1, 0]),
+                part = RevoluteJoint([0, 1, 0], tau / 8),
                 parent = 'coxa')
         self._tree.add_node(
                 key = 'femur',
@@ -63,7 +65,7 @@ class HexapodLeg:
                 parent = 'coxa_femur_joint')
         self._tree.add_node(
                 key = 'femur_tibia_joint',
-                part = RevoluteJoint([0, 1, 0]),
+                part = RevoluteJoint([0, 1, 0], -tau / 4),
                 parent = 'femur')
         self._tree.add_node(
                 key = 'decoration',
@@ -81,6 +83,14 @@ class HexapodLeg:
         parameters['coxa_femur_joint']['angle'] = joints_angles[1]
         parameters['femur_tibia_joint']['angle'] = joints_angles[2]
         return parameters
+
+    def _limit_joints_angles(self):
+        """Apply mechanical constraints on joints angles"""
+        for i in range(3):
+            if self._joints_angles[i] > self._joints_amplitudes[i]:
+                self._joints_angles[i] = self._joints_amplitudes[i]
+            if self._joints_angles[i] < -self._joints_amplitudes[i]:
+                self._joints_angles[i] = -self._joints_amplitudes[i]
 
 class Hexapod:
     """Hexapod with direct legs control"""

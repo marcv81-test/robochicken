@@ -148,10 +148,12 @@ class RigidLink:
 class RevoluteJoint:
     """Revolute joint part"""
 
-    def __init__(self, axis):
+    def __init__(self, axis, mount_angle):
         self._axis = axis
+        self._mount_angle = mount_angle
 
     def displacement(self, angle):
+        angle = angle + self._mount_angle
         return Displacement.create_rotation(self._axis, angle)
 
 class _Root:
