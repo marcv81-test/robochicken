@@ -30,9 +30,9 @@ class JacobianSolver:
 class JacobianInverseSolver(JacobianSolver):
     """Numeric solver using the Jacobian inverse technique"""
 
-    def __init__(self, max_input_fix_norm, **kwargs):
+    def __init__(self, max_input_fix, **kwargs):
         """Constructor"""
-        self._max_input_fix_norm = max_input_fix_norm
+        self._max_input_fix = max_input_fix
         JacobianSolver.__init__(self, **kwargs)
 
     def jacobian_inverse_matrix(self, **kwargs):
@@ -51,13 +51,16 @@ class JacobianInverseSolver(JacobianSolver):
                 input_vector = input_vector,
                 output_vector = output_vector)
         input_fix_vector = np.dot(matrix, output_error_vector)
-        input_fix_vector = self.limit_input_fix_vector(input_fix_vector)
+        input_fix_vector = self._limit_input_fix_vector(input_fix_vector)
         return input_vector + input_fix_vector
 
-    def limit_input_fix_vector(self, input_fix_vector):
-        """Limits the norm of the input fix vector"""
-        input_fix_norm = np.linalg.norm(input_fix_vector)
-        if (input_fix_norm > self._max_input_fix_norm):
-            ratio = self._max_input_fix_norm / input_fix_norm
-            input_fix_vector = ratio * np.asarray(input_fix_vector)
+    def _limit_input_fix_vector(self, input_fix_vector):
+        """Limits the input fix vector"""
+        global_ratio = 1
+        for i in range(len(input_fix_vector)):
+            ratio = abs(input_fix_vector[i] / self._max_input_fix)
+            if ratio > global_ratio:
+                global_ratio = ratio
+        if global_ratio > 1:
+            input_fix_vector = np.asarray(input_fix_vector) / global_ratio
         return input_fix_vector

@@ -16,7 +16,7 @@ class HexapodLeg:
         self._target_endpoint = self._endpoint
         self._solver = JacobianInverseSolver(
                 function = lambda x: self.endpoint(x),
-                max_input_fix_norm = 0.25)
+                max_input_fix = 0.5)
 
     def endpoint(self, joints_angles):
         """Forward kinematics equation of the tree endpoint"""
