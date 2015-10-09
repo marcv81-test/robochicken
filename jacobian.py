@@ -12,10 +12,8 @@ class JacobianSolver:
         """Jacobian transpose matrix of the function at the input vector"""
         if (output_vector == None):
             output_vector = self._function(input_vector)
-        input_size = len(input_vector)
-        output_size = len(output_vector)
-        matrix = np.zeros((input_size, output_size))
-        for i in range(input_size):
+        matrix = np.zeros((len(input_vector), len(output_vector)))
+        for i in range(len(input_vector)):
             altered_input_vector = list(input_vector)
             altered_input_vector[i] = altered_input_vector[i] + self._input_delta
             altered_output_vector = self._function(altered_input_vector)
@@ -41,8 +39,8 @@ class JacobianInverseSolver(JacobianSolver):
 
     def converge(self, input_vector, target_output_vector, output_vector = None):
         """
-        Attempts to calculate an improved input vector
-        so that the output vector converges toward the target.
+        Attempt to calculate an improved input vector so that
+        the output vector converges toward the target.
         """
         if (output_vector == None):
             output_vector = self._function(input_vector)
@@ -55,7 +53,7 @@ class JacobianInverseSolver(JacobianSolver):
         return input_vector + input_fix_vector
 
     def _limit_input_fix_vector(self, input_fix_vector):
-        """Limits the input fix vector"""
+        """Limit the input fix vector"""
         global_ratio = 1
         for i in range(len(input_fix_vector)):
             ratio = abs(input_fix_vector[i] / self._max_input_fix)
