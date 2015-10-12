@@ -142,20 +142,22 @@ class Hexapod:
     """Hexapod with direct legs control"""
 
     def __init__(self,
+            displacement = Displacement(),
             limited_joints = False,
             algorithm = 'Jacobian Inverse'):
         """Constructor"""
         self._legs_count = 6
         self._legs = [None] * self._legs_count
-        initial_translation = Displacement.create_translation([1, 0, 0])
+        leg_translation = Displacement.create_translation([1, 0, 0])
         for i in range(self._legs_count):
             angle = tau / (2 * self._legs_count) + i * tau / self._legs_count
-            initial_rotation = Displacement.create_rotation([0, 0, 1], angle)
-            initial_displacement = initial_rotation.compose(initial_translation)
+            leg_rotation = Displacement.create_rotation([0, 0, 1], angle)
+            leg_displacement = leg_rotation.compose(leg_translation)
+            initial_displacement = displacement.compose(leg_displacement)
             self._legs[i] = HexapodLeg(
-                initial_displacement = initial_displacement,
-                limited_joints = limited_joints,
-                algorithm = algorithm)
+                    initial_displacement = initial_displacement,
+                    limited_joints = limited_joints,
+                    algorithm = algorithm)
 
     def direct_control(self, x, y, z, angle):
         """Control the legs directly"""
