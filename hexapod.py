@@ -25,14 +25,29 @@ class HexapodLeg:
         displacements = self._tree.evaluate(parameters)
         return displacements['tibia'].translation_vector()
 
-    def inverse_kinematics(self, target_endpoint):
-        """Update the joints angles according to an IK approximation"""
+    def endpoint_inverse_kinematics(self, target_endpoint):
+        """
+        Update the joints angles according to an IK approximation
+        to attempt to reach a set endpoint position.
+        """
         self._target_endpoint = target_endpoint
         self._joints_angles = self._solver.converge(
                 input_vector = self._joints_angles,
                 target_output_vector = self._target_endpoint,
                 output_vector = self._endpoint)
         self._endpoint = self.endpoint(self._joints_angles)
+
+    def displacement_inverse_kinematics(self, target_displacement):
+        """
+        Update the joints angles according to an IK approximation
+        to attempt to reach a set displacement from the default
+        endpoint position.
+        """
+        default_displacement = Displacement.create_translation(
+                self._default_endpoint)
+        displacement = target_displacement.compose(default_displacement)
+        target_endpoint = displacement.translation_vector()
+        self.endpoint_inverse_kinematics(target_endpoint)
 
     def initialize_draw(self):
         """Initialize the visual elements"""
@@ -134,11 +149,7 @@ class Hexapod:
         target_translation = Displacement.create_translation([x, y, z])
         target_displacement = target_translation.compose(target_rotation)
         for i in range(self._legs_count):
-            default_displacement = Displacement.create_translation(
-                    self._legs[i]._default_endpoint)
-            leg_displacement = target_displacement.compose(default_displacement)
-            target_endpoint = leg_displacement.translation_vector()
-            self._legs[i].inverse_kinematics(target_endpoint)
+            self._legs[i].displacement_inverse_kinematics(target_displacement)
 
     def initialize_draw(self):
         """Initialize the visual elements"""
