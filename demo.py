@@ -10,7 +10,9 @@ arrow(axis = [0, 1, 0], color = color.green)
 arrow(axis = [0, 0, 1], color = color.blue)
 
 joystick = joystick.Joystick("/dev/input/js1")
-hexapod = Hexapod(limited_joints = True)
+hexapod = Hexapod(
+		limited_joints = False,
+		algorithm = 'Damped Least Squares')
 hexapod.initialize_draw()
 
 t = 0.0

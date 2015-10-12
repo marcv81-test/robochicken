@@ -62,3 +62,36 @@ class JacobianInverseSolver(JacobianSolver):
         if global_ratio > 1:
             input_fix_vector = np.asarray(input_fix_vector) / global_ratio
         return input_fix_vector
+
+class DampedLeastSquaresSolver(JacobianSolver):
+    """Numeric solver using the Damped Least Squares (DLS) technique"""
+
+    def __init__(self, constant, **kwargs):
+        """Constructor"""
+        self._constant = constant
+        JacobianSolver.__init__(self, **kwargs)
+
+    def dls_matrix(self, **kwargs):
+        """Damped Least Squares matrix"""
+        jacobian_transpose_matrix = self.jacobian_transpose_matrix(**kwargs)
+        jacobian_matrix = np.transpose(jacobian_transpose_matrix)
+        square_matrix = np.dot(jacobian_matrix, jacobian_transpose_matrix)
+        size, size = np.shape(square_matrix)
+        identity = np.identity(size)
+        return np.dot(
+                jacobian_transpose_matrix,
+                np.linalg.inv(square_matrix + self._constant**2 * identity))
+
+    def converge(self, input_vector, target_output_vector, output_vector = None):
+        """
+        Attempt to calculate an improved input vector so that
+        the output vector converges toward the target.
+        """
+        if (output_vector == None):
+            output_vector = self._function(input_vector)
+        output_error_vector = target_output_vector - output_vector
+        dls_matrix = self.dls_matrix(
+                input_vector = input_vector,
+                output_vector = output_vector)
+        input_fix_vector = np.dot(dls_matrix, output_error_vector)
+        return input_vector + input_fix_vector

@@ -8,16 +8,25 @@ class HexapodLeg:
 
     def __init__(self,
             initial_displacement = Displacement(),
-            limited_joints = False):
+            limited_joints = False,
+            algorithm = 'Jacobian Inverse'):
         """Constructor"""
+
         self._initialize_tree(initial_displacement, limited_joints)
         self._joints_angles = [0] * 3
         self._endpoint = self.endpoint(self._joints_angles)
         self._default_endpoint = self._endpoint
         self._target_endpoint = self._endpoint
-        self._solver = JacobianInverseSolver(
-                function = lambda x: self.endpoint(x),
-                max_input_fix = 0.5)
+
+        # IK algorithm selection
+        if algorithm == 'Damped Least Squares':
+            self._solver = DampedLeastSquaresSolver(
+                    function = lambda x: self.endpoint(x),
+                    constant = 0.8)
+        elif algorithm == 'Jacobian Inverse':
+            self._solver = JacobianInverseSolver(
+                    function = lambda x: self.endpoint(x),
+                    max_input_fix = 0.5)
 
     def endpoint(self, joints_angles):
         """Forward kinematics equation of the tree endpoint"""
@@ -132,7 +141,9 @@ class HexapodLeg:
 class Hexapod:
     """Hexapod with direct legs control"""
 
-    def __init__(self, limited_joints = False):
+    def __init__(self,
+            limited_joints = False,
+            algorithm = 'Jacobian Inverse'):
         """Constructor"""
         self._legs_count = 6
         self._legs = [None] * self._legs_count
@@ -141,7 +152,10 @@ class Hexapod:
             angle = tau / (2 * self._legs_count) + i * tau / self._legs_count
             initial_rotation = Displacement.create_rotation([0, 0, 1], angle)
             initial_displacement = initial_rotation.compose(initial_translation)
-            self._legs[i] = HexapodLeg(initial_displacement, limited_joints)
+            self._legs[i] = HexapodLeg(
+                initial_displacement = initial_displacement,
+                limited_joints = limited_joints,
+                algorithm = algorithm)
 
     def direct_control(self, x, y, z, angle):
         """Control the legs directly"""
