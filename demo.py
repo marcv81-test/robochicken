@@ -13,11 +13,9 @@ arrow(axis = [0, 0, 1], color = color.blue)
 joystick = joystick.Joystick("/dev/input/js1")
 hexapod_top = Hexapod(
 		displacement = Displacement.create_translation([0, 0, -2]),
-		limited_joints = True,
 		algorithm = 'Jacobian Inverse')
 hexapod_bottom = Hexapod(
 		displacement = Displacement.create_translation([0, 0, 1]),
-		limited_joints = False,
 		algorithm = 'Damped Least Squares')
 hexapod_top.initialize_draw()
 hexapod_bottom.initialize_draw()

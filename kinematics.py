@@ -156,25 +156,6 @@ class RevoluteJoint:
         angle = angle + self._mount_angle
         return Displacement.create_rotation(self._axis, angle)
 
-class LimitedRevoluteJoint(RevoluteJoint):
-    """
-    Limited revolute joint part.
-
-    The limit is implemented mapping the joint angle from R
-    to an interval of R via a sigmoid function (arctangent).
-    The first partial derivatives of the forward kinematics
-    equation are hence continuous and we can estimate the IK
-    using the Jacobian inverse, damped least squares, etc.
-    """
-
-    def __init__(self, amplitude, **kwargs):
-        self._amplitude = amplitude
-        RevoluteJoint.__init__(self, **kwargs)
-
-    def displacement(self, angle):
-        angle = 4 * self._amplitude / tau * math.atan(angle)
-        return RevoluteJoint.displacement(self, angle)
-
 class _Root:
     """
     Part used as the root node of any tree.

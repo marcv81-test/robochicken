@@ -8,11 +8,10 @@ class HexapodLeg:
 
     def __init__(self,
             initial_displacement = Displacement(),
-            limited_joints = False,
             algorithm = 'Jacobian Inverse'):
         """Constructor"""
 
-        self._initialize_tree(initial_displacement, limited_joints)
+        self._initialize_tree(initial_displacement)
         self._joints_angles = [0] * 3
         self._endpoint = self.endpoint(self._joints_angles)
         self._default_endpoint = self._endpoint
@@ -69,7 +68,7 @@ class HexapodLeg:
         self._tree.draw(parameters)
         self._ball.pos = self._target_endpoint
 
-    def _initialize_tree(self, initial_displacement, limited_joints):
+    def _initialize_tree(self, initial_displacement):
         """Initialize the kinematic tree"""
 
         # Prepare the joints factory
@@ -88,17 +87,10 @@ class HexapodLeg:
                 'coxa_femur_joint': tau / 4,
                 'femur_tibia_joint': tau / 4
         }
-        if limited_joints:
-            def create_joint(name):
-                return LimitedRevoluteJoint(
-                        axis = joints_axes[name],
-                        mount_angle = joints_mount_angles[name],
-                        amplitude = joints_amplitudes[name])
-        else:
-            def create_joint(name):
-                return RevoluteJoint(
-                        axis = joints_axes[name],
-                        mount_angle = joints_mount_angles[name])
+        def create_joint(name):
+            return RevoluteJoint(
+                    axis = joints_axes[name],
+                    mount_angle = joints_mount_angles[name])
 
         # Now build the tree
         self._tree = Tree(initial_displacement)
@@ -143,7 +135,6 @@ class Hexapod:
 
     def __init__(self,
             displacement = Displacement(),
-            limited_joints = False,
             algorithm = 'Jacobian Inverse'):
         """Constructor"""
         self._legs_count = 6
@@ -156,7 +147,6 @@ class Hexapod:
             initial_displacement = displacement.compose(leg_displacement)
             self._legs[i] = HexapodLeg(
                     initial_displacement = initial_displacement,
-                    limited_joints = limited_joints,
                     algorithm = algorithm)
 
     def direct_control(self, x, y, z, angle):
