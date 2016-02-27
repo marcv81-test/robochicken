@@ -33,3 +33,9 @@ class LookupTable:
     def evaluate(self, input_vector):
         index = self._input_vector_to_index(input_vector)
         return self._table[index]
+
+    def save(self, filename):
+        np.save(filename, np.array(self._table))
+
+    def load(self, filename):
+        self._table = np.load(filename)
