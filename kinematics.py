@@ -118,6 +118,12 @@ class Tree:
             if hasattr(self._parts[key], 'initialize_draw'):
                 self._parts[key].initialize_draw()
 
+    def uninitialize_draw(self):
+        """Delete the visual parts"""
+        for key in self._parts:
+            if hasattr(self._parts[key], 'initialize_draw'):
+                self._parts[key].uninitialize_draw()
+
     def draw(self, parameters):
         """Draw the visual parts"""
         displacements = self.evaluate(parameters)
@@ -138,6 +144,10 @@ class RigidLink:
 
     def initialize_draw(self):
         self._rod = v.cylinder(radius = 0.05)
+
+    def uninitialize_draw(self):
+        self._rod.visible = False
+        del self._rod
 
     def draw(self, displacement_before, displacement_after):
         point_before = displacement_before.translation_vector()

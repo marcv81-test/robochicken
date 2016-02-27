@@ -62,6 +62,12 @@ class HexapodLeg:
         self._tree.initialize_draw()
         self._ball = visual.sphere(radius = 0.1, color = visual.color.red)
 
+    def uninitialize_draw(self):
+        """Delete the visual elements"""
+        self._tree.uninitialize_draw()
+        self._ball.visible = False
+        del self._ball
+
     def draw(self):
         """Render the visual elements"""
         parameters = self._prepare_parameters(self._joints_angles)
@@ -161,6 +167,11 @@ class Hexapod:
         """Initialize the visual elements"""
         for i in range(self._legs_count):
             self._legs[i].initialize_draw()
+
+    def uninitialize_draw(self):
+        """Delete the visual elements"""
+        for i in range(self._legs_count):
+            self._legs[i].uninitialize_draw()
 
     def draw(self):
         """Render the visual elements"""
