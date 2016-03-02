@@ -62,3 +62,9 @@ class LookupTable:
                 new_weights.append(w1 * d1 + w2 * d2)
             new_distances = distances[1:]
             return self._lerp_sum(new_weights, new_distances)
+
+    def save(self, filename):
+        np.save(filename, np.array(self._table))
+
+    def load(self, filename):
+        self._table = np.load(filename)
