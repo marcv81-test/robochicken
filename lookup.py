@@ -2,10 +2,11 @@ import numpy as np
 
 class LookupTable:
 
-    def __init__(self, input_dimension, output_dimension, resolution):
+    def __init__(self, input_dimension, output_dimension, resolution, epsilon = 1e-3):
         self._input_dimension = int(input_dimension)
         self._output_dimension = int(output_dimension)
         self._resolution = int(resolution)
+        self._epsilon = float(epsilon)
         # Non-trivial attributes
         shape = [self._resolution] * self._input_dimension
         shape.append(output_dimension)
@@ -37,11 +38,19 @@ class LookupTable:
     def populate(self, function):
         self._iterate_all(lambda input_vector: self._set(input_vector, function(input_vector)))
 
+    def _sanitize_input(self, input_vector):
+        input_vector = list(input_vector)
+        input_vector = np.maximum(input_vector, self._epsilon)
+        input_vector = np.minimum(input_vector, self._resolution - 1 - self._epsilon)
+        return input_vector
+
     def get_nearest(self, input_vector):
+        input_vector = self._sanitize_input(input_vector)
         input_vector = np.round(input_vector)
         return self._table[tuple(input_vector)]
 
     def get_lerp(self, input_vector):
+        input_vector = self._sanitize_input(input_vector)
         first_corner = np.floor(input_vector)
         weights = list()
         self._iterate_hypercube(

@@ -3,7 +3,7 @@ import pylab
 
 import numpy as np
 
-from lookup2 import *
+from lookup import *
 
 def test_function(input_vector):
     x = input_vector[0]
@@ -13,8 +13,8 @@ def test_function(input_vector):
 lookup_table = LookupTable(2, 1, 11)
 lookup_table.populate(test_function)
 
-x = np.linspace(0.01, 9.99, 100)
-y = np.linspace(0.01, 9.99, 100)
+x = np.linspace(-0.2, 10.2, 100)
+y = np.linspace(-0.2, 10.2, 100)
 
 def prepare_plot(function):
     color = pylab.zeros([len(x), len(y)])
