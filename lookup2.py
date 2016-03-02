@@ -47,7 +47,7 @@ class LookupTable:
         self._iterate_hypercube(
                 function = lambda input_vector: weights.append(self._get(input_vector)),
                 input_vector = first_corner)
-        distances = input_vector - first_corner
+        distances = list(reversed(input_vector - first_corner))
         return self._lerp_sum(weights, distances)
 
     def _lerp_sum(self, weights, distances):
