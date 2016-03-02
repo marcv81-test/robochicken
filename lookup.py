@@ -1,38 +1,67 @@
 import numpy as np
 
 class LookupTable:
-    """Input vector components must be between 0.0 and 1.0"""
 
-    def __init__(self, input_vector_size, output_vector_size, segments_count):
-        self._input_vector_size = int(input_vector_size)
-        self._output_vector_size = int(output_vector_size)
-        self._segments_count = int(segments_count)
-        self._indices_count = self._segments_count**self._input_vector_size
-        self._table = np.zeros([self._indices_count, output_vector_size])
+    def __init__(self, input_dimension, output_dimension, resolution):
+        self._input_dimension = int(input_dimension)
+        self._output_dimension = int(output_dimension)
+        self._resolution = int(resolution)
+        # Non-trivial attributes
+        shape = [self._resolution] * self._input_dimension
+        shape.append(output_dimension)
+        self._table = np.zeros(shape)
 
-    def _input_vector_to_index(self, input_vector):
-        scaled_vector = np.round((self._segments_count - 1) * np.array(input_vector))
-        index = 0
-        for i in xrange(self._input_vector_size):
-            index *= self._segments_count
-            index += int(scaled_vector[i])
-        return index
+    def _get(self, input_vector):
+        return self._table[tuple(input_vector)]
 
-    def _index_to_input_vector(self, index):
-        scaled_vector = np.zeros(self._input_vector_size)
-        for i in xrange(self._input_vector_size - 1, -1, -1):
-            scaled_vector[i] = float(index % self._segments_count)
-            index /= self._segments_count
-        return scaled_vector / (self._segments_count - 1)
+    def _set(self, input_vector, output_vector):
+        self._table[tuple(input_vector)] = output_vector
+
+    def _iterate_all(self, function, input_vector = None, index = 0):
+        if input_vector == None: input_vector = [0] * self._input_dimension
+        if index == self._input_dimension: function(input_vector)
+        else:
+            for i in xrange(self._resolution):
+                new_input_vector = list(input_vector)
+                new_input_vector[index] = i
+                self._iterate_all(function, new_input_vector, index + 1)
+
+    def _iterate_hypercube(self, function, input_vector, index = 0):
+        if index == self._input_dimension: function(input_vector)
+        else:
+            for i in xrange(2):
+                new_input_vector = list(input_vector)
+                new_input_vector[index] += i
+                self._iterate_hypercube(function, new_input_vector, index + 1)
 
     def populate(self, function):
-        for i in xrange(self._indices_count):
-            print str(float(i) / self._indices_count * 100) + '%'
-            self._table[i] = function(self._index_to_input_vector(i))
+        self._iterate_all(lambda input_vector: self._set(input_vector, function(input_vector)))
 
-    def evaluate(self, input_vector):
-        index = self._input_vector_to_index(input_vector)
-        return self._table[index]
+    def get_nearest(self, input_vector):
+        input_vector = np.round(input_vector)
+        return self._table[tuple(input_vector)]
+
+    def get_lerp(self, input_vector):
+        first_corner = np.floor(input_vector)
+        weights = list()
+        self._iterate_hypercube(
+                function = lambda input_vector: weights.append(self._get(input_vector)),
+                input_vector = first_corner)
+        distances = list(reversed(input_vector - first_corner))
+        return self._lerp_sum(weights, distances)
+
+    def _lerp_sum(self, weights, distances):
+        if len(weights) == 1: return weights[0]
+        else:
+            d1 = 1 - distances[0]
+            d2 = distances[0]
+            new_weights = list()
+            while len(weights) > 0:
+                w1 = weights.pop(0)
+                w2 = weights.pop(0)
+                new_weights.append(w1 * d1 + w2 * d2)
+            new_distances = distances[1:]
+            return self._lerp_sum(new_weights, new_distances)
 
     def save(self, filename):
         np.save(filename, np.array(self._table))
