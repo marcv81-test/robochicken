@@ -27,23 +27,17 @@ class LookupTable:
         self._table[tuple(input_vector)] = output_vector
 
     def _world_to_table(self, world_vector):
-        table_vector = np.zeros(self._input_dimension)
-        for i in xrange(self._input_dimension):
-            value = world_vector[i]
-            value -= self._input_from[i]
-            value *= self._input_resolution[i] - 1
-            value /= self._input_span[i]
-            table_vector[i] = value
+        table_vector = np.array(world_vector)
+        table_vector = table_vector - self._input_from
+        table_vector = np.multiply(table_vector, self._input_resolution - 1)
+        table_vector = np.divide(table_vector, self._input_span)
         return table_vector
 
     def _table_to_world(self, table_vector):
-        world_vector = np.zeros(self._input_dimension)
-        for i in xrange(self._input_dimension):
-            value = table_vector[i]
-            value *= self._input_span[i]
-            value /= self._input_resolution[i] - 1
-            value += self._input_from[i]
-            world_vector[i] = value
+        world_vector = np.array(table_vector)
+        world_vector = np.multiply(world_vector, self._input_span)
+        world_vector = np.divide(world_vector, self._input_resolution - 1)
+        world_vector = world_vector + self._input_from
         return world_vector
 
     def _iterate_all(self, function, input_vector = None, index = 0):
