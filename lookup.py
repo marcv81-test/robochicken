@@ -3,15 +3,28 @@ import numpy as np
 class LookupTable:
 
     def __init__(self, input_specifications, output_dimension, epsilon = 1e-3):
+        """
+        LookupTable(
+                input_specifications = [
+                    {'from': -5, 'to': 5, 'points': 11},
+                    {'from': -2, 'to': 2, 'points': 5}],
+                output_dimension = 1)
+
+        For each input dimension 'from' and 'to' are the world coordinates bounds
+        and 'points' the number of points to interpolate the output from.
+        """
+
         # Input specifications
         self._input_dimension = len(input_specifications)
         self._input_points = np.array([int(item['points']) for item in input_specifications])
         self._input_from = np.array([float(item['from']) for item in input_specifications])
         self._input_to = np.array([float(item['to']) for item in input_specifications])
+
         # Output specifications
         self._output_dimension = int(output_dimension)
-        # Epsilon
+
         self._epsilon = float(epsilon)
+
         # Internal table
         shape = list(self._input_points)
         shape.append(self._output_dimension)
