@@ -2,14 +2,22 @@ import numpy as np
 
 class LookupTable:
 
-    def __init__(self, input_dimension, output_dimension, resolution, epsilon = 1e-3):
+    def __init__(self,
+            input_dimension,
+            input_resolution,
+            input_from,
+            input_to,
+            output_dimension,
+            epsilon = 1e-3):
         self._input_dimension = int(input_dimension)
+        self._input_resolution = np.array(input_resolution)
+        self._input_from = np.array(input_from)
+        self._input_span = np.array(input_to) - self._input_from
         self._output_dimension = int(output_dimension)
-        self._resolution = int(resolution)
         self._epsilon = float(epsilon)
         # Non-trivial attributes
-        shape = [self._resolution] * self._input_dimension
-        shape.append(output_dimension)
+        shape = list(self._input_resolution)
+        shape.append(self._output_dimension)
         self._table = np.zeros(shape)
 
     def _get(self, input_vector):
@@ -18,11 +26,31 @@ class LookupTable:
     def _set(self, input_vector, output_vector):
         self._table[tuple(input_vector)] = output_vector
 
+    def _world_to_table(self, world_vector):
+        table_vector = np.zeros(self._input_dimension)
+        for i in xrange(self._input_dimension):
+            value = world_vector[i]
+            value -= self._input_from[i]
+            value *= self._input_resolution[i] - 1
+            value /= self._input_span[i]
+            table_vector[i] = value
+        return table_vector
+
+    def _table_to_world(self, table_vector):
+        world_vector = np.zeros(self._input_dimension)
+        for i in xrange(self._input_dimension):
+            value = table_vector[i]
+            value *= self._input_span[i]
+            value /= self._input_resolution[i] - 1
+            value += self._input_from[i]
+            world_vector[i] = value
+        return world_vector
+
     def _iterate_all(self, function, input_vector = None, index = 0):
         if input_vector == None: input_vector = [0] * self._input_dimension
         if index == self._input_dimension: function(input_vector)
         else:
-            for i in xrange(self._resolution):
+            for i in xrange(self._input_resolution[index]):
                 new_input_vector = list(input_vector)
                 new_input_vector[index] = i
                 self._iterate_all(function, new_input_vector, index + 1)
@@ -36,12 +64,12 @@ class LookupTable:
                 self._iterate_hypercube(function, new_input_vector, index + 1)
 
     def populate(self, function):
-        self._iterate_all(lambda input_vector: self._set(input_vector, function(input_vector)))
+        self._iterate_all(lambda input_vector: self._set(input_vector, function(self._table_to_world(input_vector))))
 
     def _sanitize_input(self, input_vector):
-        input_vector = list(input_vector)
+        input_vector = self._world_to_table(input_vector)
         input_vector = np.maximum(input_vector, self._epsilon)
-        input_vector = np.minimum(input_vector, self._resolution - 1 - self._epsilon)
+        input_vector = np.minimum(input_vector, self._input_resolution - 1 - self._epsilon)
         return input_vector
 
     def get_nearest(self, input_vector):

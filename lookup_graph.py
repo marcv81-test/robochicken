@@ -1,4 +1,3 @@
-import math
 import pylab
 
 import numpy as np
@@ -8,13 +7,18 @@ from lookup import *
 def test_function(input_vector):
     x = input_vector[0]
     y = input_vector[1]
-    return [math.cos(x) + math.sin(y)]
+    return [np.cos(x) + np.sin(y)]
 
-lookup_table = LookupTable(2, 1, 11)
+lookup_table = LookupTable(
+        input_dimension = 2,
+        input_resolution = [11, 5],
+        input_from = [-5, -2],
+        input_to = [5, 2],
+        output_dimension = 1)
 lookup_table.populate(test_function)
 
-x = np.linspace(-0.2, 10.2, 100)
-y = np.linspace(-0.2, 10.2, 100)
+x = np.linspace(-5.2, 5.2, 100)
+y = np.linspace(-2.2, 2.2, 100)
 
 def prepare_plot(function):
     color = pylab.zeros([len(x), len(y)])
