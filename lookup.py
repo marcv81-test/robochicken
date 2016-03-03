@@ -78,7 +78,7 @@ class LookupTable:
     def get_nearest(self, world_input_vector):
         input_vector = self._from_world(world_input_vector)
         input_vector = np.round(input_vector)
-        return self._table[tuple(input_vector)]
+        return self._get(input_vector)
 
     def get_lerp(self, world_input_vector):
         input_vector = self._from_world(world_input_vector)
