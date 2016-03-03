@@ -10,10 +10,9 @@ def test_function(input_vector):
     return [np.cos(x) + np.sin(y)]
 
 lookup_table = LookupTable(
-        input_dimension = 2,
-        input_resolution = [11, 5],
-        input_from = [-5, -2],
-        input_to = [5, 2],
+        input_specifications = [
+            {'from': -5, 'to': 5, 'points': 11},
+            {'from': -2, 'to': 2, 'points': 5}],
         output_dimension = 1)
 lookup_table.populate(test_function)
 

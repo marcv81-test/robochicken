@@ -2,21 +2,18 @@ import numpy as np
 
 class LookupTable:
 
-    def __init__(self,
-            input_dimension,
-            input_resolution,
-            input_from,
-            input_to,
-            output_dimension,
-            epsilon = 1e-3):
-        self._input_dimension = int(input_dimension)
-        self._input_resolution = np.array(input_resolution)
-        self._input_from = np.array(input_from)
-        self._input_span = np.array(input_to) - self._input_from
+    def __init__(self, input_specifications, output_dimension, epsilon = 1e-3):
+        # Input specifications
+        self._input_dimension = len(input_specifications)
+        self._input_points = np.array([int(item['points']) for item in input_specifications])
+        self._input_from = np.array([float(item['from']) for item in input_specifications])
+        self._input_to = np.array([float(item['to']) for item in input_specifications])
+        # Output specifications
         self._output_dimension = int(output_dimension)
+        # Epsilon
         self._epsilon = float(epsilon)
-        # Non-trivial attributes
-        shape = list(self._input_resolution)
+        # Internal table
+        shape = list(self._input_points)
         shape.append(self._output_dimension)
         self._table = np.zeros(shape)
 
@@ -26,25 +23,29 @@ class LookupTable:
     def _set(self, input_vector, output_vector):
         self._table[tuple(input_vector)] = output_vector
 
-    def _world_to_table(self, world_vector):
-        table_vector = np.array(world_vector)
-        table_vector = table_vector - self._input_from
-        table_vector = np.multiply(table_vector, self._input_resolution - 1)
-        table_vector = np.divide(table_vector, self._input_span)
-        return table_vector
+    def _from_world(self, world_input_vector):
+        """Convert input vector from world to internal coordinates"""
+        input_vector = np.array(world_input_vector)
+        input_vector = input_vector - self._input_from
+        input_vector = np.multiply(input_vector, self._input_points - 1)
+        input_vector = np.divide(input_vector, self._input_to - self._input_from)
+        input_vector = np.maximum(input_vector, self._epsilon)
+        input_vector = np.minimum(input_vector, self._input_points - 1 - self._epsilon)
+        return input_vector
 
-    def _table_to_world(self, table_vector):
-        world_vector = np.array(table_vector)
-        world_vector = np.multiply(world_vector, self._input_span)
-        world_vector = np.divide(world_vector, self._input_resolution - 1)
-        world_vector = world_vector + self._input_from
-        return world_vector
+    def _to_world(self, input_vector):
+        """Convert input vector from internal to world coordinates"""
+        world_input_vector = np.array(input_vector)
+        world_input_vector = np.multiply(world_input_vector, self._input_to - self._input_from)
+        world_input_vector = np.divide(world_input_vector, self._input_points - 1)
+        world_input_vector = world_input_vector + self._input_from
+        return world_input_vector
 
     def _iterate_all(self, function, input_vector = None, index = 0):
         if input_vector == None: input_vector = [0] * self._input_dimension
         if index == self._input_dimension: function(input_vector)
         else:
-            for i in xrange(self._input_resolution[index]):
+            for i in xrange(self._input_points[index]):
                 new_input_vector = list(input_vector)
                 new_input_vector[index] = i
                 self._iterate_all(function, new_input_vector, index + 1)
@@ -58,21 +59,16 @@ class LookupTable:
                 self._iterate_hypercube(function, new_input_vector, index + 1)
 
     def populate(self, function):
-        self._iterate_all(lambda input_vector: self._set(input_vector, function(self._table_to_world(input_vector))))
+        self._iterate_all(lambda input_vector:
+                self._set(input_vector, function(self._to_world(input_vector))))
 
-    def _sanitize_input(self, input_vector):
-        input_vector = self._world_to_table(input_vector)
-        input_vector = np.maximum(input_vector, self._epsilon)
-        input_vector = np.minimum(input_vector, self._input_resolution - 1 - self._epsilon)
-        return input_vector
-
-    def get_nearest(self, input_vector):
-        input_vector = self._sanitize_input(input_vector)
+    def get_nearest(self, world_input_vector):
+        input_vector = self._from_world(world_input_vector)
         input_vector = np.round(input_vector)
         return self._table[tuple(input_vector)]
 
-    def get_lerp(self, input_vector):
-        input_vector = self._sanitize_input(input_vector)
+    def get_lerp(self, world_input_vector):
+        input_vector = self._from_world(world_input_vector)
         first_corner = np.floor(input_vector)
         weights = list()
         self._iterate_hypercube(
