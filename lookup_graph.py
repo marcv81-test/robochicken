@@ -13,7 +13,7 @@ lookup_table = LookupTable(
         input_specifications = [
             {'from': -5, 'to': 5, 'points': 11},
             {'from': -2, 'to': 2, 'points': 5}],
-        output_dimension = 1)
+        output_size = 1)
 lookup_table.populate(test_function)
 
 x = np.linspace(-5.2, 5.2, 100)
