@@ -1,41 +1,124 @@
-# TODO: write proper unit tests
+import numpy as np
+import numpy.testing as npt
+import os
 
 from lookup import *
 
-from pprint import pprint
+class TestLookup:
 
-lookup_table = LookupTable(1, 1, 3)
+    def test_1d_integration(self):
 
-pprint(lookup_table.input_vector_to_index([0.0]))
-pprint(lookup_table.input_vector_to_index([0.5]))
-pprint(lookup_table.input_vector_to_index([1.0]))
+        lookup_table = LookupTable(
+                input_specifications = [
+                    {'from': -1, 'to': 1, 'points': 3}],
+                output_size = 1)
 
-lookup_table = LookupTable(1, 1, 6)
+        lookup_table.populate(function = lambda x: x)
 
-pprint(lookup_table.input_vector_to_index([0.0]))
-pprint(lookup_table.input_vector_to_index([0.2]))
-pprint(lookup_table.input_vector_to_index([0.4]))
-pprint(lookup_table.input_vector_to_index([0.6]))
-pprint(lookup_table.input_vector_to_index([0.8]))
-pprint(lookup_table.input_vector_to_index([1.0]))
+        # Nearest interpolation at grid points
+        npt.assert_almost_equal([-1], lookup_table.get_nearest([-1]))
+        npt.assert_almost_equal([0], lookup_table.get_nearest([0]))
+        npt.assert_almost_equal([1], lookup_table.get_nearest([1]))
 
-lookup_table = LookupTable(2, 1, 3)
+        # Nearest interpolation not at grid points
+        npt.assert_almost_equal([-1], lookup_table.get_nearest([-0.75]))
+        npt.assert_almost_equal([0], lookup_table.get_nearest([-0.25]))
+        npt.assert_almost_equal([0], lookup_table.get_nearest([0.25]))
+        npt.assert_almost_equal([1], lookup_table.get_nearest([0.75]))
 
-pprint(lookup_table.input_vector_to_index([0.0, 0.0]))
-pprint(lookup_table.input_vector_to_index([0.0, 0.5]))
-pprint(lookup_table.input_vector_to_index([0.0, 1.0]))
-pprint(lookup_table.input_vector_to_index([0.5, 0.0]))
-pprint(lookup_table.input_vector_to_index([0.5, 0.5]))
-pprint(lookup_table.input_vector_to_index([0.5, 1.0]))
-pprint(lookup_table.input_vector_to_index([1.0, 0.0]))
-pprint(lookup_table.input_vector_to_index([1.0, 0.5]))
-pprint(lookup_table.input_vector_to_index([1.0, 1.0]))
+        # Nearest interpolation out of grid bounds
+        npt.assert_almost_equal([-1], lookup_table.get_nearest([-10]))
+        npt.assert_almost_equal([1], lookup_table.get_nearest([10]))
 
-lookup_table = LookupTable(4, 4, 6)
-pprint(lookup_table.input_vector_to_index([1.0, 1.0, 1.0, 1.0])) #(6**4)-1
-pprint(lookup_table.input_vector_to_index([0.6, 0.8, 0.2, 1.0])) #(6**4)-1
+        # Linear interpolation at grid points
+        npt.assert_almost_equal([-1], lookup_table.get_lerp([-1]))
+        npt.assert_almost_equal([0], lookup_table.get_lerp([0]))
+        npt.assert_almost_equal([1], lookup_table.get_lerp([1]))
 
-pprint(lookup_table.index_to_input_vector(803))
+        # Linear interpolation not at grid points
+        npt.assert_almost_equal([-0.75], lookup_table.get_lerp([-0.75]))
+        npt.assert_almost_equal([-0.25], lookup_table.get_lerp([-0.25]))
+        npt.assert_almost_equal([0.25], lookup_table.get_lerp([0.25]))
+        npt.assert_almost_equal([0.75], lookup_table.get_lerp([0.75]))
 
-lookup_table.populate(lambda x: x)
-pprint(lookup_table._table)
+        # Linear interpolation out of grid bounds
+        npt.assert_almost_equal([-1], lookup_table.get_lerp([-10]))
+        npt.assert_almost_equal([1], lookup_table.get_lerp([10]))
+
+    def test_file(self):
+
+        # Make sure the file does not exist
+        if os.path.exists('test.npy'): os.remove('test.npy')
+
+        # Saving works as expected
+        lookup_table_a = LookupTable(
+                input_specifications = [
+                    {'from': 0, 'to': 2, 'points': 3}],
+                output_size = 1)
+        lookup_table_a.populate(function = lambda x: x)
+        for i in xrange(3):
+            output_vector = lookup_table_a._get([i])
+            npt.assert_almost_equal(i, output_vector[0])
+        lookup_table_a.save('test')
+
+        # Loading works as expected
+        lookup_table_b = LookupTable(
+                input_specifications = [
+                    {'from': 0, 'to': 2, 'points': 3}],
+                output_size = 1)
+        lookup_table_b.load('test.npy')
+        for i in xrange(3):
+            output_vector = lookup_table_b._get([i])
+            npt.assert_almost_equal(i, output_vector[0])
+
+        # Rewritting works as expected
+        lookup_table_a.populate(function = lambda x: 2 * x)
+        for i in xrange(3):
+            output_vector = lookup_table_a._get([i])
+            npt.assert_almost_equal(2 * i, output_vector[0])
+        lookup_table_a.save('test')
+
+        # Reloading works as expected
+        lookup_table_b.load('test.npy')
+        for i in xrange(3):
+            output_vector = lookup_table_b._get([i])
+            npt.assert_almost_equal(2 * i, output_vector[0])
+
+        # Loading into a table with more grid points fails
+        lookup_table_c = LookupTable(
+                input_specifications = [
+                    {'from': 0, 'to': 2, 'points': 5}],
+                output_size = 1)
+        npt.assert_raises(ValueError, lookup_table_c.load, 'test.npy')
+        for i in xrange(5):
+            output_vector = lookup_table_c._get([i])
+            npt.assert_almost_equal(0, output_vector[0])
+
+        # Loading into a table with a larger input size fails
+        lookup_table_d = LookupTable(
+                input_specifications = [
+                    {'from': 0, 'to': 2, 'points': 3},
+                    {'from': 0, 'to': 2, 'points': 3}],
+                output_size = 1)
+        npt.assert_raises(ValueError, lookup_table_d.load, 'test.npy')
+        for i in xrange(3):
+            for j in xrange(3):
+                output_vector = lookup_table_d._get([i, j])
+                npt.assert_almost_equal(0, output_vector[0])
+
+        # Loading into a table with a larger output size fails
+        lookup_table_e = LookupTable(
+                input_specifications = [
+                    {'from': 0, 'to': 2, 'points': 3}],
+                output_size = 2)
+        npt.assert_raises(ValueError, lookup_table_e.load, 'test.npy')
+        for i in xrange(3):
+            output_vector = lookup_table_e._get([i])
+            npt.assert_almost_equal(0, output_vector[0])
+            npt.assert_almost_equal(0, output_vector[1])
+
+        # Clean up after ourselves
+        if os.path.exists('test.npy'): os.remove('test.npy')
+
+if __name__ == "__main__":
+    npt.run_module_suite()

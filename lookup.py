@@ -8,31 +8,19 @@ class LookupTable:
     and input vectors can have any size.
     """
 
-    def __init__(self, input_specifications, output_size, epsilon = 1e-3):
+    def __init__(self, input_specifications, output_size, epsilon = 1e-9):
         """
-        Constructor.
-
-        Defines the bounds of the grid and the number of its points for each
-        component of the input vector.
-
-        LookupTable(
-                input_specifications = [
-                    {'from': -5, 'to': 5, 'points': 11},
-                    {'from': -2, 'to': 2, 'points': 5}],
-                output_size = 1)
+        Constructor. Defines the bounds of the grid and the number of its points
+        for each component of the input vector.
         """
-
+        self._epsilon = float(epsilon)
         # Input specifications
         self._input_size = len(input_specifications)
         self._input_from = np.array([float(x['from']) for x in input_specifications])
         self._input_to = np.array([float(x['to']) for x in input_specifications])
         self._input_points = np.array([int(x['points']) for x in input_specifications])
-
         # Output specifications
         self._output_size = int(output_size)
-
-        self._epsilon = float(epsilon)
-
         # Internal table
         shape = list(self._input_points)
         shape.append(self._output_size)
@@ -44,7 +32,12 @@ class LookupTable:
 
     def load(self, filename):
         """Loads the lookup table"""
-        self._table = np.load(filename)
+        shape = list(self._input_points)
+        shape.append(self._output_size)
+        table = np.load(filename)
+        if table.shape != tuple(shape):
+            raise ValueError('Shapes do not match')
+        self._table = table
 
     def populate(self, function):
         """Populates the lookup table at all the points of the grid"""
