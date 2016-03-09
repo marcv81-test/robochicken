@@ -35,8 +35,8 @@ class HexapodLeg:
 
     def endpoint_inverse_kinematics(self, target_endpoint):
         """
-        Update the joints angles according to an IK approximation
-        to attempt to reach a set endpoint position.
+        Update the joints angles according to an IK approximation to attempt
+        to reach a set endpoint position.
         """
         self._target_endpoint = target_endpoint
         self._joints_angles = self._solver.converge(
@@ -47,9 +47,8 @@ class HexapodLeg:
 
     def displacement_inverse_kinematics(self, target_displacement):
         """
-        Update the joints angles according to an IK approximation
-        to attempt to reach a set displacement from the default
-        endpoint position.
+        Update the joints angles according to an IK approximation to attempt
+        to reach a set displacement from the default endpoint position.
         """
         default_displacement = Displacement.create_translation(
                 self._default_endpoint)

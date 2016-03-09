@@ -39,8 +39,8 @@ class JacobianInverseSolver(JacobianSolver):
 
     def converge(self, input_vector, target_output_vector, output_vector = None):
         """
-        Attempt to calculate an improved input vector so that
-        the output vector converges toward the target.
+        Attempt to calculate an improved input vector so that the output
+        vector converges toward the target.
         """
         if (output_vector == None):
             output_vector = self._function(input_vector)
@@ -84,8 +84,8 @@ class DampedLeastSquaresSolver(JacobianSolver):
 
     def converge(self, input_vector, target_output_vector, output_vector = None):
         """
-        Attempt to calculate an improved input vector so that
-        the output vector converges toward the target.
+        Attempt to calculate an improved input vector so that the output
+        vector converges toward the target.
         """
         if (output_vector == None):
             output_vector = self._function(input_vector)
