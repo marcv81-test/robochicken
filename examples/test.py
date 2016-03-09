@@ -1,8 +1,7 @@
-import joystick
-
-from kinematics import *
-from hexapod import *
-from lookup import *
+from robotics.joystick import *
+from robotics.kinematics import *
+from robotics.hexapod import *
+from robotics.lookup import *
 
 class LookupHexapod(Hexapod):
 
@@ -42,7 +41,7 @@ lookup_table.load('data.npy')
 lookup_hexapod = LookupHexapod(lookup_table)
 lookup_hexapod.initialize_draw()
 
-joystick = joystick.Joystick("/dev/input/js1")
+joystick = Joystick("/dev/input/js1")
 
 t = 0.0
 dt = 0.04

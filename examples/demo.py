@@ -1,7 +1,6 @@
-import joystick
-
-from kinematics import *
-from hexapod import *
+from robotics.joystick import *
+from robotics.kinematics import *
+from robotics.hexapod import *
 
 scene.range = 5
 scene.forward = [1, 0, 0]
@@ -10,7 +9,7 @@ arrow(axis = [1, 0, 0], color = color.red)
 arrow(axis = [0, 1, 0], color = color.green)
 arrow(axis = [0, 0, 1], color = color.blue)
 
-joystick = joystick.Joystick("/dev/input/js1")
+joystick = Joystick("/dev/input/js1")
 hexapod_top = Hexapod(
 		displacement = Displacement.create_translation([0, 0, -2]),
 		algorithm = 'Jacobian Inverse')

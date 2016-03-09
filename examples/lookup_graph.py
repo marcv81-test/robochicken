@@ -1,7 +1,7 @@
 import pylab
 import numpy as np
 
-from lookup import *
+from robotics.lookup import *
 
 def test_function(input_vector):
     x = input_vector[0]

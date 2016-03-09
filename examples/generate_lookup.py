@@ -1,6 +1,6 @@
-from kinematics import *
-from hexapod import *
-from lookup import *
+from robotics.kinematics import *
+from robotics.hexapod import *
+from robotics.lookup import *
 
 scene.range = 5
 scene.forward = [1, 0, 0]

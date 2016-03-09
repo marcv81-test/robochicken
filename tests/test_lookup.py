@@ -1,10 +1,12 @@
+import unittest
 import numpy as np
 import numpy.testing as npt
+
 import os
 
-from lookup import *
+from robotics.lookup import *
 
-class TestLookup:
+class LookupTableTestCase(unittest.TestCase):
 
     def test_1d_integration(self):
 
@@ -119,6 +121,3 @@ class TestLookup:
 
         # Clean up after ourselves
         if os.path.exists('test.npy'): os.remove('test.npy')
-
-if __name__ == "__main__":
-    npt.run_module_suite()

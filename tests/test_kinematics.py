@@ -1,9 +1,10 @@
+import unittest
 import numpy as np
 import numpy.testing as npt
 
-from kinematics import *
+from robotics.kinematics import *
 
-class TestDisplacement:
+class DisplacementTestCase(unittest.TestCase):
 
     def test_trivial_translation_vector(self):
 
@@ -27,6 +28,3 @@ class TestDisplacement:
         # Combination of positive rotations in a right-handed coordinates system
         f = a.compose(b).compose(c).compose(b)
         npt.assert_almost_equal([0, 1, -1], f.translation_vector())
-
-if __name__ == "__main__":
-    npt.run_module_suite()

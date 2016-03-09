@@ -1,9 +1,10 @@
+import unittest
 import numpy as np
 import numpy.testing as npt
 
-from jacobian import *
+from robotics.jacobian import *
 
-class TestJacobianSolver:
+class JacobianSolverTestCase(unittest.TestCase):
 
     def test_jacobian_matrix(self):
 
@@ -15,7 +16,7 @@ class TestJacobianSolver:
         npt.assert_almost_equal(matrix, f_solver.jacobian_matrix(input_vector = [0, 0, 0]))
         npt.assert_almost_equal(matrix, f_solver.jacobian_matrix(input_vector = [1, 2, 3]))
 
-class TestJacobianInverseSolver:
+class JacobianInverseSolverTestCase(unittest.TestCase):
 
     def test_limit_input_fix_vector(self):
 
@@ -38,7 +39,7 @@ class TestJacobianInverseSolver:
         npt.assert_almost_equal([1, 1, 0], f_solver.converge(
                 input_vector = [0, 0, 0], target_output_vector = [1, 2, 3]))
 
-class TestDampedLeastSquaresSolver:
+class DampedLeastSquaresSolverTest(unittest.TestCase):
 
     def test_converge(self):
 
@@ -53,6 +54,3 @@ class TestDampedLeastSquaresSolver:
                     input_vector = input_vector,
                     target_output_vector = [1, 2, 3])
         npt.assert_almost_equal([1, 1, 0], input_vector)
-
-if __name__ == "__main__":
-    npt.run_module_suite()

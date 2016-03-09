@@ -1,2 +1,4 @@
 *.pyc
-data.npy
+*.npy
+/.coverage
+/htmlcov
