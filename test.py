@@ -13,12 +13,12 @@ class LookupHexapod(Hexapod):
     def direct_control(self, x, y, z, angle):
         """Control the legs directly"""
         input_vector = np.zeros(4)
-        input_vector[0] = x / 3.0 + 0.5
-        input_vector[1] = y / 3.0 + 0.5
-        input_vector[2] = z / 3.6 + 0.5
-        input_vector[3] = angle / (tau / 4) + 0.5
+        input_vector[0] = x * 1.5
+        input_vector[1] = y * 1.5
+        input_vector[2] = z * 1.5
+        input_vector[3] = angle * (tau / 4)
 
-        output_vector = self._lookup_table.evaluate(input_vector)
+        output_vector = self._lookup_table.get_lerp(input_vector)
         for i in range(self._legs_count):
             for j in xrange(3):
                 self._legs[i]._joints_angles[j] = output_vector[(3 * i) + j]
@@ -30,7 +30,13 @@ arrow(axis = [1, 0, 0], color = color.red)
 arrow(axis = [0, 1, 0], color = color.green)
 arrow(axis = [0, 0, 1], color = color.blue)
 
-lookup_table = LookupTable(4, 18, 7)
+lookup_table = LookupTable(
+        input_specifications = [
+            {'from': -1.5, 'to': 1.5, 'points': 5},
+            {'from': -1.5, 'to': 1.5, 'points': 5},
+            {'from': -1.5, 'to': 1.5, 'points': 5},
+            {'from': -tau / 8, 'to': tau / 8, 'points': 5}],
+        output_size = 18)
 lookup_table.load('data.npy')
 
 lookup_hexapod = LookupHexapod(lookup_table)
