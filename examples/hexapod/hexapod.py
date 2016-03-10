@@ -1,7 +1,7 @@
 from visual import *
 
-from kinematics import *
-from jacobian import *
+from robotics.kinematics import *
+from robotics.jacobian import *
 
 class HexapodLeg:
     """Hexapod leg"""

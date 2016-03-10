@@ -1,7 +1,7 @@
 from robotics.joystick import *
 from robotics.kinematics import *
-from robotics.hexapod import *
 from robotics.lookup import *
+from examples.hexapod.hexapod import *
 
 class LookupHexapod(Hexapod):
 

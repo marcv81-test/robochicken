@@ -1,6 +1,6 @@
 from robotics.kinematics import *
-from robotics.hexapod import *
 from robotics.lookup import *
+from examples.hexapod.hexapod import *
 
 scene.range = 5
 scene.forward = [1, 0, 0]
