@@ -15,10 +15,9 @@ class ExampleTree:
         self._target_endpoint = self._endpoint
         self._solver = DampedLeastSquaresSolver(
                 function = lambda x: self.endpoint(x),
-                constant = 0.8)
-        #self._solver = JacobianInverseSolver(
-        #        function = lambda x: self.endpoint(x),
-        #        max_input_fix = 0.5)
+                constant = 0.8,
+                max_input_fix = tau / 16,
+                max_output_error = 1)
 
     def endpoint(self, joints_angles):
         """Forward kinematics equation of the tree endpoint"""
@@ -29,9 +28,8 @@ class ExampleTree:
                 displacements['d2'].translation_vector()])
 
     def endpoint_inverse_kinematics(self, target_endpoint):
-        """
-        Update the joints angles according to an IK approximation to attempt
-        to reach a set endpoint position.
+        """Update the joints angles according to an IK approximation
+        to attempt to reach a set endpoint position.
         """
         self._target_endpoint = target_endpoint
         self._joints_angles = self._solver.converge(
