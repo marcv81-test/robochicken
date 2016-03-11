@@ -1,18 +1,16 @@
 import numpy as np
 
 class LookupTable:
-    """
-    Instances of this class associate output vectors to input vectors at the
-    points of a uniform grid. We can then calculate the output vector at any
-    input vector using nearest-neighbor or linear interpolation. The output
-    and input vectors can have any size.
+    """Instances of this class associate output vectors to input
+    vectors at the points of a uniform grid. We can then calculate the
+    output vector at any input vector using nearest-neighbor or linear
+    interpolation. The output and input vectors can have any size.
     """
 
     def __init__(self, input_specifications, output_size, epsilon = 1e-9):
-        """
-        Constructor. Defines the bounds of the grid and the number of its
-        points for each component of the input vector, and the number of
-        components of the output vector.
+        """Constructor. Defines the bounds of the grid and the number
+        of its points for each component of the input vector, and the
+        number of components of the output vector.
         """
         # Input
         self._input_size = len(input_specifications)
@@ -70,10 +68,10 @@ class LookupTable:
         return LookupTable._process_lerp(weights, distances)
 
     def _to_indices(self, input_vector):
-        """
-        Converts an input vector to lookup table indices. The indices may
-        not be integers and may need to be rounded. However they are always
-        in the open inverval from 0 to self._input_points - 1.
+        """Converts an input vector to lookup table indices. The
+        indices may not be integers and may need to be rounded.
+        However they are always in the open inverval from 0 to
+        self._input_points - 1.
         """
         input_indices = np.array(input_vector)
         input_indices = input_indices - self._input_from
@@ -115,9 +113,9 @@ class LookupTable:
                         index = index + 1)
 
     def _iterate_hypercube(self, function, input_indices, index = 0):
-        """
-        Calls a function on all the corners of a hypercube made of adjacent
-        points of the grid. The input indices are for the lowest corner.
+        """Calls a function on all the corners of a hypercube made of
+        adjacent points of the grid. The input indices are for the
+        lowest corner.
         """
         if index == self._input_size: function(input_indices)
         else:

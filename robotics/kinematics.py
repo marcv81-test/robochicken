@@ -6,12 +6,12 @@ import visual as v
 tau = 6.28318530718
 
 class Displacement:
-    """
-    Combination of a translation and a rotation representing a rigid body
-    displacement in space.
+    """Combination of a translation and a rotation representing a rigid
+    body displacement in space.
 
-    This implementation stores the translation as a vector and the rotation
-    as a 3x3 matrix. The translation is applied *before* the rotation.
+    This implementation stores the translation as a vector and the
+    rotation as a 3x3 matrix. The translation is applied *before* the
+    rotation.
     """
 
     def __init__(self):
@@ -62,12 +62,11 @@ class Displacement:
         return self._translation
 
 class Tree:
-    """
-    Kinematic Tree. Can be used as a kinematic chain.
+    """Kinematic Tree. Can be used as a kinematic chain.
 
-    Each node has a key, a part, a parent, and a list of children. The part,
-    parent, and list of children are stored by key in dictionaries. This
-    allows arbitrary node access by key.
+    Each node has a key, a part, a parent, and a list of children.
+    The part, parent, and list of children are stored by key in
+    dictionaries. This allows arbitrary node access by key.
     """
 
     def __init__(self, root_displacement):
@@ -93,9 +92,8 @@ class Tree:
         return parameters
 
     def evaluate(self, parameters):
-        """
-        Walk the tree (non-recursively) and evaluate the displacement at each
-        node using forward kinematics.
+        """Walk the tree (non-recursively) and evaluate the
+        displacement at each node using forward kinematics.
         """
         displacements = dict()
         todo = collections.deque()
@@ -166,11 +164,10 @@ class RevoluteJoint:
         return Displacement.create_rotation(self._axis, angle)
 
 class _Root:
-    """
-    Part used as the root node of any tree.
+    """Part used as the root node of any tree.
 
-    Stores the intial displacement. Shall *not* be used as a regular part
-    anywhere else in a tree.
+    Stores the intial displacement. Shall *not* be used as a regular
+    part anywhere else in a tree.
     """
 
     def __init__(self, displacement):
