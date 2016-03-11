@@ -8,29 +8,29 @@ from robotics.jacobian import *
 def np_af(x):
     return np.array(x, dtype = np.float_)
 
-class LimitTestCase(unittest.TestCase):
-
-    # No change if the highest component is at the limit
-    vector = np_af((1, -2))
-    JacobianSolver._limit_component(vector, 2)
-    npt.assert_almost_equal((1, -2), vector)
-
-    # Scaling if the highest component exceeds the limit
-    vector = np_af((1, -2))
-    JacobianSolver._limit_component(vector, 1)
-    npt.assert_almost_equal((0.5, -1), vector)
-
-    # No change if the norm is at the limit
-    vector = np_af((-6, 8))
-    JacobianSolver._limit_norm(vector, 10)
-    npt.assert_almost_equal((-6, 8), vector)
-
-    # Scaling if the norm exceeds the limit
-    vector = np_af((-6, 8))
-    JacobianSolver._limit_norm(vector, 5)
-    npt.assert_almost_equal((-3, 4), vector)
-
 class JacobianMatrixTestCase(unittest.TestCase):
+
+    def test_limit(self):
+
+        # No change if the highest component is at the limit
+        vector = np_af((1, -2))
+        JacobianSolver._limit_component(vector, 2)
+        npt.assert_almost_equal((1, -2), vector)
+
+        # Scaling if the highest component exceeds the limit
+        vector = np_af((1, -2))
+        JacobianSolver._limit_component(vector, 1)
+        npt.assert_almost_equal((0.5, -1), vector)
+
+        # No change if the norm is at the limit
+        vector = np_af((-6, 8))
+        JacobianSolver._limit_norm(vector, 10)
+        npt.assert_almost_equal((-6, 8), vector)
+
+        # Scaling if the norm exceeds the limit
+        vector = np_af((-6, 8))
+        JacobianSolver._limit_norm(vector, 5)
+        npt.assert_almost_equal((-3, 4), vector)
 
     def test_jacobian_matrix(self):
 
