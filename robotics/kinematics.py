@@ -1,4 +1,3 @@
-import math
 import collections
 import numpy as np
 import visual as v
@@ -30,8 +29,8 @@ class Displacement:
     def create_rotation(axis, angle):
         """Create rotation from axis and angle"""
         axis = axis / np.linalg.norm(axis)
-        a = math.cos(angle / 2.0)
-        b, c, d = -axis * math.sin(angle / 2.0)
+        a = np.cos(angle / 2.0)
+        b, c, d = -axis * np.sin(angle / 2.0)
         aa = a * a
         bb = b * b
         cc = c * c
