@@ -102,11 +102,14 @@ class LookupTable:
 
     def _iterate_all(self, function, input_indices = None, index = 0):
         """Calls a function on all the points of the grid."""
-        if input_indices == None: input_indices = [0] * self._input_size
-        if index == self._input_size: function(input_indices)
+        if input_indices == None:
+            input_indices = np.zeros(self._input_size)
+        else: input_indices = np.asfarray(input_indices)
+        if index == self._input_size:
+            return np.asfarray(function(input_indices))
         else:
             for i in xrange(self._input_points[index]):
-                new_input_indices = list(input_indices)
+                new_input_indices = input_indices.copy()
                 new_input_indices[index] = i
                 self._iterate_all(function,
                         input_indices = new_input_indices,
@@ -117,10 +120,12 @@ class LookupTable:
         adjacent points of the grid. The input indices are for the
         lowest corner.
         """
-        if index == self._input_size: function(input_indices)
+        input_indices = np.asfarray(input_indices)
+        if index == self._input_size:
+            return np.asfarray(function(input_indices))
         else:
             for i in xrange(2):
-                new_input_indices = list(input_indices)
+                new_input_indices = input_indices.copy()
                 new_input_indices[index] += i
                 self._iterate_hypercube(function,
                         input_indices = new_input_indices,
