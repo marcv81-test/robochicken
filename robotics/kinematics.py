@@ -22,7 +22,7 @@ class Displacement:
     def create_translation(vector):
         """Create translation from vector"""
         displacement = Displacement()
-        displacement._translation = vector
+        displacement._translation = np.array(vector, np.float_)
         return displacement
 
     @staticmethod
@@ -42,10 +42,11 @@ class Displacement:
         bd = b * d
         cd = c * d
         displacement = Displacement()
-        displacement._rotation = [
-                [aa + bb - cc - dd, 2 * (bc + ad), 2 * (bd - ac)],
-                [2 * (bc - ad), aa + cc - bb - dd, 2 * (cd + ab)],
-                [2 * (bd + ac), 2 * (cd - ab), aa + dd - bb - cc]]
+        displacement._rotation = np.array((
+                (aa + bb - cc - dd, 2 * (bc + ad), 2 * (bd - ac)),
+                (2 * (bc - ad), aa + cc - bb - dd, 2 * (cd + ab)),
+                (2 * (bd + ac), 2 * (cd - ab), aa + dd - bb - cc)),
+                np.float_)
         return displacement
 
     def compose(self, other):
@@ -91,8 +92,8 @@ class Tree:
         return parameters
 
     def evaluate(self, parameters):
-        """Walk the tree (non-recursively) and evaluate the
-        displacement at each node using forward kinematics.
+        """Walk the tree and evaluate the displacement at each node
+        using forward kinematics.
         """
         displacements = dict()
         todo = collections.deque()
