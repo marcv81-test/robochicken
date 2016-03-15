@@ -31,17 +31,12 @@ class LookupTable:
         self._epsilon = float(epsilon)
 
     def save(self, filename):
-        """Saves the lookup table"""
+        """Saves the lookup table data"""
         np.save(filename, np.array(self._table))
 
     def load(self, filename):
-        """Loads the lookup table"""
-        shape = list(self._input_points)
-        shape.append(self._output_size)
-        table = np.load(filename)
-        if table.shape != tuple(shape):
-            raise ValueError('Shapes do not match')
-        self._table = table
+        """Loads the lookup table data"""
+        self._table = np.load(filename)
 
     def populate(self, function):
         """Populates the lookup table at all the points of the grid"""
