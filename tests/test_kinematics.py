@@ -6,42 +6,50 @@ from robotics.kinematics import *
 
 class DisplacementTestCase(unittest.TestCase):
 
-    def test_constructor_side_effects(self):
-
-        # create_translation() does not hijack input vector instance
-        vector = np.array((1, 0, 0), np.float_)
-        a = Displacement.create_translation(vector)
-        npt.assert_equal(False, vector is a._translation)
-
-        # create_rotation() does not clobber input axis
-        axis = np.array((1, 0, 0), np.float_)
-        b = Displacement.create_rotation(axis, tau / 4)
-        npt.assert_almost_equal((1, 0, 0), axis)
-
-    def test_trivialities(self):
-
-        a = Displacement.create_rotation((0, 0, 1), tau / 4)
-        b = Displacement.create_translation((1, 0, 0))
+    def test_rotation(self):
 
         # Pure rotation has null translation vector
-        npt.assert_almost_equal((0, 0, 0), a.translation_vector())
+        r = Displacement.create_rotation((0, 0, 1), tau / 4)
+        npt.assert_almost_equal((0, 0, 0), r.translation_vector())
 
-        # Pure translation has translation vector it was created with
-        npt.assert_almost_equal((1, 0, 0), b.translation_vector())
+    def test_translation(self):
 
-        # Composition with pure rotation does not change translation vector
-        npt.assert_almost_equal((1, 0, 0), b.compose(a).translation_vector())
+        # Pure translation has trivial translation vector
+        t = Displacement.create_translation((1, 0, 0))
+        npt.assert_almost_equal((1, 0, 0), t.translation_vector())
 
     def test_composition(self):
 
-        a = Displacement.create_rotation((0, 0, 1), tau / 4)
-        b = Displacement.create_translation((1, 0, 0))
-        c = Displacement.create_rotation((0, 1, 0), tau / 4)
+        r1 = Displacement.create_rotation((0, 0, 1), tau / 4)
+        r2 = Displacement.create_rotation((0, 1, 0), tau / 4)
+        t = Displacement.create_translation((1, 0, 0))
 
-        # Positive rotation around Z in a right-handed coordinates system
-        d = a.compose(b)
-        npt.assert_almost_equal((0, 1, 0), d.translation_vector())
+        # Use your right hand to create a frame of reference: thumb is X,
+        # index finger is Y, middle finger is Z. Remember the initial
+        # orientation. Imagine a point at (0, 0, 0).
 
-        # Combination of positive rotations in a right-handed coordinates system
-        f = a.compose(b).compose(c).compose(b)
-        npt.assert_almost_equal((0, 1, -1), f.translation_vector())
+        # Translation vectors and rotation axes are given in the frame of
+        # reference created by your right hand at the time you apply them.
+        # Translations displace the point. Rotations turn your right hand
+        # without moving the point.
+
+        # Positive rotations around an axis: point the right hand thumb to
+        # the axis, the rotation follow the curl of the fingers.
+
+        # The displacement translation vector is the position of the point
+        # in the frame of reference created by the initial orientation of
+        # your right hand.
+
+        # Test #1
+        # - Positive rotation around Z
+        # - Positive translation along X (now pointing toward initial Y)
+        x = r1.compose(t)
+        npt.assert_almost_equal((0, 1, 0), x.translation_vector())
+
+        # Test #2
+        # - Positive rotation around Z
+        # - Positive translation along X (now pointing toward initial Y)
+        # - Positive rotation around Y (now pointing toward initial -X)
+        # - Positive translation along X (now pointing toward initial -Z)
+        y = r1.compose(t).compose(r2).compose(t)
+        npt.assert_almost_equal((0, 1, -1), y.translation_vector())
