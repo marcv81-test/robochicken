@@ -16,7 +16,7 @@ class JacobianSolver:
         else: self._max_output_error = float(max_output_error)
         self._input_delta = float(input_delta)
 
-    def jacobian_transpose_matrix(self, input_vector, output_vector = None):
+    def _jacobian_transpose_matrix(self, input_vector, output_vector = None):
         """Jacobian transpose matrix of the function at the input vector"""
         input_vector = np.asfarray(input_vector)
         if (output_vector == None):
@@ -32,9 +32,9 @@ class JacobianSolver:
             matrix[i] = output_delta_vector / self._input_delta
         return matrix
 
-    def jacobian_matrix(self, **kwargs):
+    def _jacobian_matrix(self, **kwargs):
         """Jacobian matrix of the function at the input vector"""
-        return np.transpose(self.jacobian_transpose_matrix(**kwargs))
+        return np.transpose(self._jacobian_transpose_matrix(**kwargs))
 
     def converge(self, input_vector, target_output_vector, output_vector = None):
         """Attempt to calculate an improved input vector so that the
@@ -45,7 +45,7 @@ class JacobianSolver:
         if (output_vector == None):
             output_vector = self._function(input_vector)
         output_vector = np.asfarray(output_vector)
-        matrix = self.solver_matrix(
+        matrix = self._solver_matrix(
                 input_vector = input_vector,
                 output_vector = output_vector)
         output_error_vector = target_output_vector - output_vector
@@ -79,9 +79,9 @@ class JacobianInverseSolver(JacobianSolver):
         """Constructor"""
         JacobianSolver.__init__(self, **kwargs)
 
-    def solver_matrix(self, **kwargs):
+    def _solver_matrix(self, **kwargs):
         """Jacobian inverse matrix of the function at the input vector"""
-        return np.linalg.pinv(self.jacobian_matrix(**kwargs))
+        return np.linalg.pinv(self._jacobian_matrix(**kwargs))
 
 class DampedLeastSquaresSolver(JacobianSolver):
     """Numeric solver using the Damped Least Squares (DLS) technique"""
@@ -91,9 +91,9 @@ class DampedLeastSquaresSolver(JacobianSolver):
         self._constant = constant
         JacobianSolver.__init__(self, **kwargs)
 
-    def solver_matrix(self, **kwargs):
+    def _solver_matrix(self, **kwargs):
         """Damped Least Squares matrix"""
-        jacobian_transpose_matrix = self.jacobian_transpose_matrix(**kwargs)
+        jacobian_transpose_matrix = self._jacobian_transpose_matrix(**kwargs)
         jacobian_matrix = np.transpose(jacobian_transpose_matrix)
         square_matrix = np.dot(jacobian_matrix, jacobian_transpose_matrix)
         size = square_matrix.shape[0]
