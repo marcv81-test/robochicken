@@ -1,7 +1,7 @@
 from visual import *
 
 from robotics.joystick import *
-from robotics.kinematics import *
+from robotics.kinematics.tree import *
 from robotics.jacobian import *
 
 class ExampleTree:
