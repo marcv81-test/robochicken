@@ -2,7 +2,7 @@ import unittest
 import numpy as np
 import numpy.testing as npt
 
-from robotics.kinematics import *
+from robotics.displacement import *
 
 class DisplacementTestCase(unittest.TestCase):
 
