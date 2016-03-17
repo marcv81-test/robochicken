@@ -58,3 +58,10 @@ class Displacement:
     def translation_vector(self):
         """Translation vector of the displacement"""
         return self._translation
+
+    def inverse(self):
+        displacement = Displacement()
+        displacement._rotation = np.transpose(self._rotation)
+        displacement._translation = np.dot(
+                displacement._rotation, -self._translation)
+        return displacement

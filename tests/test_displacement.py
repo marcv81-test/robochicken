@@ -53,3 +53,18 @@ class DisplacementTestCase(unittest.TestCase):
         # - Positive translation along X (now pointing toward initial -Z)
         y = r1.compose(t).compose(r2).compose(t)
         npt.assert_almost_equal((0, 1, -1), y.translation_vector())
+
+    def test_inverse(self):
+
+        # Identity displacement
+        d0 = Displacement.create_translation((0, 0, 0))
+
+        # Non-trivial displacements
+        t = Displacement.create_translation((1, 2, 3))
+        r = Displacement.create_rotation((3, 2, 1), 3 * tau / 16)
+        a = r.compose(t)
+
+        # Composition with own inverse results in identity displacement
+        b = a.compose(a.inverse())
+        npt.assert_almost_equal(b._translation, d0._translation)
+        npt.assert_almost_equal(b._rotation, d0._rotation)
