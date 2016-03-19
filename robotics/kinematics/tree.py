@@ -77,7 +77,7 @@ class RigidLink:
     """Rigid link part"""
 
     def __init__(self, length):
-        self._displacement = Displacement.create_translation([length, 0, 0])
+        self._displacement = Displacement(translation = (length, 0, 0))
 
     def displacement(self):
         return self._displacement
@@ -90,9 +90,9 @@ class RigidLink:
         del self._rod
 
     def draw(self, displacement_before, displacement_after):
-        point_before = displacement_before.translation_vector()
-        point_after = displacement_after.translation_vector()
-        self._rod.pos = point_before
+        point_before = displacement_before.translation
+        point_after = displacement_after.translation
+        self._rod.pos = np.copy(point_before)
         self._rod.axis = point_after - point_before
 
 class RevoluteJoint:
@@ -104,7 +104,7 @@ class RevoluteJoint:
 
     def displacement(self, angle):
         angle = angle + self._mount_angle
-        return Displacement.create_rotation(self._axis, angle)
+        return Displacement(rotation = Rotation.axis_angle(self._axis, angle))
 
 class _Root:
     """Part used as the root node of any tree.

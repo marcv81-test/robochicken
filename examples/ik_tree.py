@@ -24,8 +24,8 @@ class ExampleTree:
         parameters = self._prepare_parameters(joints_angles)
         displacements = self._tree.evaluate(parameters)
         return np.concatenate([
-                displacements['d1'].translation_vector(),
-                displacements['d2'].translation_vector()])
+                displacements['d1'].translation,
+                displacements['d2'].translation])
 
     def endpoint_inverse_kinematics(self, target_endpoint):
         """Update the joints angles according to an IK approximation
