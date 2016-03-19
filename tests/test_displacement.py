@@ -4,67 +4,78 @@ import numpy.testing as npt
 
 from robotics.displacement import *
 
+class RotationTestCase(unittest.TestCase):
+
+    def test_axis_angle(self):
+
+        # Identity rotation has identity matrix
+        r_1 = Rotation.axis_angle((1, 0, 0), 0)
+        npt.assert_almost_equal(np.identity(3), r_1._matrix)
+
+        # Tau/8 rotation around Z has the expected matrix
+        r_2 = Rotation.axis_angle((0, 0, 1), tau / 8)
+        npt.assert_almost_equal((
+                (np.sqrt(2) / 2, -np.sqrt(2) / 2, 0),
+                (np.sqrt(2) / 2,  np.sqrt(2) / 2, 0),
+                (0,               0,              1)), r_2._matrix)
+
+    def test_rotate(self):
+
+        # Rotated vector has the expected value
+        r = Rotation.axis_angle((0, 0, 1), tau / 4)
+        npt.assert_almost_equal((0, 1, 0), r.rotate((1, 0, 0)))
+        npt.assert_almost_equal((-1, 0, 0), r.rotate((0, 1, 0)))
+
+    def test_compose(self):
+
+        r_x = Rotation.axis_angle((1, 0, 0), -tau / 4)
+        r_y = Rotation.axis_angle((0, 1, 0), tau / 4)
+        r_z = Rotation.axis_angle((0, 0, 1), tau / 4)
+
+        # Tau/4 rotation around Z then Y is the same as around -X then Z
+        npt.assert_almost_equal(
+            r_z.compose(r_y)._matrix,
+            r_x.compose(r_z)._matrix)
+
+    def test_invese(self):
+
+        r_0 = Rotation.axis_angle((1, 0, 0), 0)
+        r_1 = Rotation.axis_angle((1, 2, 3), tau / 12)
+
+        # Composition with own inverse is identity
+        r_2 = r_1.compose(r_1.inverse())
+        npt.assert_almost_equal(r_0._matrix, r_2._matrix)
+
 class DisplacementTestCase(unittest.TestCase):
 
-    def test_rotation(self):
+    def test_compose(self):
 
-        # Pure rotation has null translation vector
-        r = Displacement.create_rotation((0, 0, 1), tau / 4)
-        npt.assert_almost_equal((0, 0, 0), r.translation_vector())
+        r_x = Displacement(rotation = Rotation.axis_angle((1, 0, 0), -tau / 4))
+        r_y = Displacement(rotation = Rotation.axis_angle((0, 1, 0), tau / 4))
+        r_z = Displacement(rotation = Rotation.axis_angle((0, 0, 1), tau / 4))
+        t_x = Displacement(translation = (1, 0, 0))
+        t_y = Displacement(translation = (0, 1, 0))
 
-    def test_translation(self):
+        # Tau/4 rotation around Z then Y is the same as around -X then Z
+        npt.assert_almost_equal(
+            r_z.compose(r_y).rotation._matrix,
+            r_x.compose(r_z).rotation._matrix)
 
-        # Pure translation has trivial translation vector
-        t = Displacement.create_translation((1, 0, 0))
-        npt.assert_almost_equal((1, 0, 0), t.translation_vector())
-
-    def test_composition(self):
-
-        r1 = Displacement.create_rotation((0, 0, 1), tau / 4)
-        r2 = Displacement.create_rotation((0, 1, 0), tau / 4)
-        t = Displacement.create_translation((1, 0, 0))
-
-        # Use your right hand to create a frame of reference: thumb is X,
-        # index finger is Y, middle finger is Z. Remember the initial
-        # orientation. Imagine a point at (0, 0, 0).
-
-        # Translation vectors and rotation axes are given in the frame of
-        # reference created by your right hand at the time you apply them.
-        # Translations displace the point. Rotations turn your right hand
-        # without moving the point.
-
-        # Positive rotations around an axis: point the right hand thumb to
-        # the axis, the rotation follow the curl of the fingers.
-
-        # The displacement translation vector is the position of the point
-        # in the frame of reference created by the initial orientation of
-        # your right hand.
-
-        # Test #1
-        # - Positive rotation around Z
-        # - Positive translation along X (now pointing toward initial Y)
-        x = r1.compose(t)
-        npt.assert_almost_equal((0, 1, 0), x.translation_vector())
-
-        # Test #2
-        # - Positive rotation around Z
-        # - Positive translation along X (now pointing toward initial Y)
-        # - Positive rotation around Y (now pointing toward initial -X)
-        # - Positive translation along X (now pointing toward initial -Z)
-        y = r1.compose(t).compose(r2).compose(t)
-        npt.assert_almost_equal((0, 1, -1), y.translation_vector())
+        # Tau/4 rotation around Z then translation along X is the same as
+        # translation along Y then tau/4 rotation around Z.
+        d_1 = r_z.compose(t_x)
+        d_2 = t_y.compose(r_z)
+        npt.assert_almost_equal(d_1.translation, d_2.translation)
+        npt.assert_almost_equal(d_1.rotation._matrix, d_2.rotation._matrix)
 
     def test_inverse(self):
 
-        # Identity displacement
-        d0 = Displacement.create_translation((0, 0, 0))
+        d_0 = Displacement()
+        d_1 = Displacement(
+                translation = (1, 2, 3),
+                rotation = Rotation.axis_angle((3, 2, 1), 3 * tau / 16))
 
-        # Non-trivial displacements
-        t = Displacement.create_translation((1, 2, 3))
-        r = Displacement.create_rotation((3, 2, 1), 3 * tau / 16)
-        a = r.compose(t)
-
-        # Composition with own inverse results in identity displacement
-        b = a.compose(a.inverse())
-        npt.assert_almost_equal(b._translation, d0._translation)
-        npt.assert_almost_equal(b._rotation, d0._rotation)
+        # Composition with own inverse is identity
+        d_2 = d_1.compose(d_1.inverse())
+        npt.assert_almost_equal(d_0.translation, d_2.translation)
+        npt.assert_almost_equal(d_0.rotation._matrix, d_2.rotation._matrix)
