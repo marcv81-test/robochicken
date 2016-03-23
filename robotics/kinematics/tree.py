@@ -5,7 +5,7 @@ from visual import *
 from robotics.displacement import *
 
 class Tree:
-    """Kinematic Tree. Can be used as a kinematic chain.
+    """Kinematic tree. Can be used as a kinematic chain.
 
     Each node has a key, a part, a parent, and a list of children.
     The part, parent, and list of children are stored by key in
@@ -45,8 +45,8 @@ class Tree:
             key = todo.popleft()
             displacement = self._parts[key].displacement(**parameters[key])
             if key != 'root':
-                previous_displacement = displacements[self._parents[key]]
-                displacement = previous_displacement.compose(displacement)
+                parent_displacement = displacements[self._parents[key]]
+                displacement = parent_displacement.compose(displacement)
             displacements[key] = displacement
             for child_key in self._children[key]:
                 todo.append(child_key)
@@ -80,7 +80,7 @@ class RigidLink:
         self._displacement = Displacement(translation = (length, 0, 0))
 
     def displacement(self):
-        return self._displacement
+        return self._displacement.copy()
 
     def initialize_draw(self):
         self._rod = cylinder(radius = 0.05)
@@ -92,14 +92,14 @@ class RigidLink:
     def draw(self, displacement_before, displacement_after):
         point_before = displacement_before.translation
         point_after = displacement_after.translation
-        self._rod.pos = np.copy(point_before)
+        self._rod.pos = point_before
         self._rod.axis = point_after - point_before
 
 class RevoluteJoint:
     """Revolute joint part"""
 
     def __init__(self, axis, mount_angle):
-        self._axis = axis
+        self._axis = np.asfarray(axis)
         self._mount_angle = mount_angle
 
     def displacement(self, angle):
@@ -117,4 +117,4 @@ class _Root:
         self._displacement = displacement
 
     def displacement(self):
-        return self._displacement
+        return self._displacement.copy()

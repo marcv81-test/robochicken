@@ -70,6 +70,13 @@ class Displacement:
         if rotation != None: self.rotation = rotation.copy()
         else: self.rotation = Rotation()
 
+    def copy(self):
+        """Clones a displacement"""
+        displacement = Displacement(
+                translation = self.translation.copy(),
+                rotation = self.rotation.copy())
+        return displacement
+
     def compose(self, other):
         """Equivalent displacement to self then other"""
         displacement = Displacement(
